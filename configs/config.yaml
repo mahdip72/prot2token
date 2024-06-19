@@ -1,0 +1,121 @@
+fix_seed: 0
+checkpoints_every: 64
+tensorboard_log: True
+tqdm_progress_bar: False
+result_path: ./results/test/
+
+resume:
+  resume: False
+  resume_path: /path/to/checkpoint.pth
+  restart_optimizer: True
+  handle_shape_missmatch: True
+
+prot2token_model:
+  compile_model: False
+  positional_encoding_type: learned # absolute, learned
+  protein_encoder:
+    model_name:  facebook/esm2_t12_35M_UR50D # facebook/esm2_t33_650M_UR50D, facebook/esm2_t30_150M_UR50D, facebook/esm2_t12_35M_UR50D, facebook/esm2_t6_8M_UR50D
+    max_len: 1024
+    drop_positional_encoding: True
+    quantization_4_bit: False # use with tune_embedding enabled
+    tune_embedding: False
+    fine_tune:
+      enable: True
+      last_layers_trainable: 1
+    lora:
+      enable: False
+      r: 8
+      lora_alpha: 32
+      lora_dropout: 0.05
+  molecule_encoder:
+    enable: False
+    model_name: gayane/BARTSmiles
+    max_len: 128
+    drop_positional_encoding: True
+    tune_embedding: False
+    fine_tune:
+      enable: False
+      last_layers_trainable: 2
+  decoder:
+    dimension: 480
+    dim_feedforward: 960
+    num_heads: 4
+    num_layers: 8
+    max_len: 8
+    activation_function: gelu
+
+train_settings:
+  skip: False
+  data_path: /path/to/dataset/
+  num_epochs: 6
+  start_metric_epoch: 3
+  shuffle: True
+  loss: crossentropy
+  sample_weight: True
+  task_weight: False
+  mixed_precision: fp16 # no, fp16, bf16, fp8
+  batch_size: 32
+  random_masking: 0.05 # 0 to 1.0
+  num_workers: 0
+  grad_accumulation: 1
+  max_task_samples: 1000000
+
+valid_settings:
+  data_path: /path/to/dataset/
+  do_every: 1
+  batch_size: 1
+  num_workers: 0
+
+test_settings:
+  enable: True
+  data_path: /path/to/dataset/
+  batch_size: 1
+  num_workers: 0
+  monitoring_metrics:
+    phosphorylation: f1
+    fluorescence: spearman
+    stability: spearman
+    protein_ligand_affinity: rmse
+    human_ppi: f1
+    structure_similarity: spearman
+    protein_protein_interface: auc
+    enzyme_reaction: f1
+    enzyme_commission: f1
+    fold: f1
+    localization_deeploc: macro_f1
+    secondary_structure: accuracy
+    gene_ontology: f1
+
+optimizer:
+  name: adam
+  lr: 5e-5
+  weight_decouple: True
+  weight_decay: 1e-2
+  eps: 1e-16
+  beta_1: 0.9
+  beta_2: 0.999
+  use_8bit_adam: False
+  grad_clip_norm: 1
+  decay:
+    warmup: 64
+    min_lr: 1e-6
+    gamma: 0.2
+    num_restarts: 1
+
+tasks:
+  phosphorylation: False
+  localization: False
+  localization_deeploc: False
+  fold: False
+  enzyme_reaction: False
+  human_ppi: False
+  structure_similarity: False
+  protein_protein_interface: False # decoder max length: 210
+  protein_ligand_affinity: False
+  fluorescence: False
+  stability: True
+  amino_to_fold_seek: False # decoder max length: max input length + 1
+  secondary_structure: False # decoder max length: max input length + 1
+  gene_ontology: False # decoder max length: 625
+  enzyme_commission: False # decoder max length: 47
+  auxiliary: False
