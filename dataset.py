@@ -166,10 +166,6 @@ class JointDataset(torch.utils.data.Dataset):
                 if len(sequence) == 1:
                     pass
                 else:
-                    # This is for the case when we don't have two protein sequences
-                    # sequence = self.random_masking(sequence, mask_token=self.protein_encoder_tokenizer.mask_token,
-                    #                                prob=self.configs.train_settings.random_masking)
-
                     smiles_sequence = self.random_masking(
                         smiles_sequence, mask_token=self.molecule_encoder_tokenizer.mask_token,
                         prob=self.configs.train_settings.random_masking
@@ -181,7 +177,7 @@ class JointDataset(torch.utils.data.Dataset):
                 padding='max_length',
                 truncation=True,
                 return_tensors="pt"
-            )  # todo
+            )
 
             encoded_protein_sequence['input_ids'] = torch.squeeze(encoded_protein_sequence['input_ids'])
             encoded_protein_sequence['attention_mask'] = torch.squeeze(encoded_protein_sequence['attention_mask'])
