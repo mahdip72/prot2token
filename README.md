@@ -72,11 +72,11 @@ link. Then, set up the directory of the datasets folder in the `configs/config.y
 ```yaml
 train_settings:
   skip: False
-  data_data: <path_to_datasets_folder>
+  data_path: <path_to_datasets_folder>
   ...
 
 valid_settings:
-  data_data: <path_to_datasets_folder>
+  data_path: <path_to_datasets_folder>
   ...
 
 test_settings:
