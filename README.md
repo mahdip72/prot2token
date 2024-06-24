@@ -1,7 +1,8 @@
 <div align="center">
 <h2>Prot2Token: A multi-task framework for protein language processing using autoregressive language modeling</h2>
 
-**Mahdi Pourmirzaei**<sup>1&dagger;</sup> · **Farzaneh Esmaili**<sup>1 </sup> · **Mohammadreza Pourmirzaei**<sup>2 </sup> · **Duolin Wang** <sup>1</sup> · **Dong Xu**<sup>1*</sup>
+**Mahdi Pourmirzaei**<sup>1&dagger;</sup> · **Farzaneh Esmaili**<sup>1 </sup> · **Mohammadreza Pourmirzaei**<sup>
+2 </sup> · **Duolin Wang** <sup>1</sup> · **Dong Xu**<sup>1*</sup>
 
 <sup>1</sup>University of Missouri&emsp;&emsp;&emsp;&emsp;<sup>2</sup>Politecnico di Milano
 
@@ -34,11 +35,11 @@ only protein sequences. </p>
 
 # To Do
 
-- [x] Add the code for the Prot2Token model 
+- [x] Add the code for the Prot2Token model
 - [ ] Save decoder tokenizer in saving directory
 - [ ] Add inference code
 - [ ] Add the pre-trained models
-- [ ] Add datasets
+- [x] Add datasets
 
 ## Setup
 
@@ -61,6 +62,30 @@ To use this project, do as the following to install the dependencies.
 ```commandline
 bash install.sh
 ```
+
+## Dataset
+
+You can download the datasets
+from [this](https://mailmissouri-my.sharepoint.com/:f:/g/personal/mpngf_umsystem_edu/EplpatYuvHlNpsRUL9oAknwB2UKActKh7P3veMGe8DDuSw?e=U8hiFF)
+link. Then, set up the directory of the datasets folder in the `configs/config.yaml` file, data_path names like the following:
+
+```yaml
+train_settings:
+  skip: False
+  data_data: <path_to_datasets_folder>
+  ...
+
+valid_settings:
+  data_data: <path_to_datasets_folder>
+  ...
+
+test_settings:
+  enable: True
+  data_path: <path_to_datasets_folder>
+  ```
+
+All the datasets that we used in the project can be found in the datasets folder. They are preprocessed and ready to use.
+You can use them to train the model.
 
 ## Training
 
