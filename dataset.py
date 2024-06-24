@@ -213,7 +213,7 @@ class JointDataset(torch.utils.data.Dataset):
         if self.dataset_type == 'train':
             sample_weight = self.extend_sample_weights_with_ones(sample_weight, encoded_target)
 
-            return encoded_protein_sequence, encoded_target, task_weight * sample_weight, encoded_molecule_sequence
+            return encoded_protein_sequence, encoded_target, (task_weight * sample_weight).long(), encoded_molecule_sequence
         else:
             return encoded_protein_sequence, encoded_target, 1, encoded_molecule_sequence
 
