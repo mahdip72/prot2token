@@ -30,8 +30,8 @@ def build_self_supervised_labels(sequence):
     :param sequence: A string representing a sequence of amino acids.
     :return: A dictionary with amino acids as keys and lists of indices as values.
     """
-    # amino_acids = 'STYKRN'  # List of amino acids to check
-    amino_acids = 'ACDEFGHIKLMNPQRSTVWY'  # List of amino acids to check
+    amino_acids = 'STYKRN'  # List of amino acids to check
+    # amino_acids = 'ACDEFGHIKLMNPQRSTVWY'  # List of amino acids to check
     positions_dict = {acid: [] for acid in amino_acids}  # Initialize dictionary
 
     for i, acid in enumerate(sequence, start=1):  # Start counting from 1
