@@ -148,7 +148,7 @@ def main(dict_config, config_file_path):
 
     logging = get_logging(result_path)
 
-    dataloaders_dict, encoder_tokenizer, decoder_tokenizer = prepare_dataloaders(configs, logging)
+    dataloaders_dict, encoder_tokenizer, decoder_tokenizer = prepare_dataloaders(configs, logging, result_path)
     logging.info('preparing dataloaders are done')
 
     accelerator = Accelerator(

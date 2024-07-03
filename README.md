@@ -36,7 +36,7 @@ only protein sequences. </p>
 # To Do
 
 - [x] Add the code for the Prot2Token model
-- [ ] Save decoder tokenizer in saving directory
+- [x] Save decoder tokenizer in saving directory
 - [ ] Add inference code
 - [ ] Add the pre-trained models
 - [x] Add datasets

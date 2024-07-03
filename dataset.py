@@ -1,4 +1,5 @@
 import os
+import pickle
 import random
 import torch
 import yaml
@@ -218,7 +219,7 @@ class JointDataset(torch.utils.data.Dataset):
             return encoded_protein_sequence, encoded_target, 1, encoded_molecule_sequence
 
 
-def prepare_dataloaders(configs, logging):
+def prepare_dataloaders(configs, logging, result_path):
     train_samples_list = []
     sum_of_target_samples = []
     tasks_tokens_list = []
@@ -528,6 +529,10 @@ def prepare_dataloaders(configs, logging):
                                        dataset_type='train', task_weight=task_weight,
                                        upsampling=False, upsampling_factor=1
                                        )
+
+    # Save the tokenizer index to token dictionary in yaml format in saving directory
+    with open(os.path.join(result_path, "decoder_tokenizer.yaml"), "w") as f:
+        yaml.dump(decoder_tokenizer.index_token_dict, f)
 
     train_dataloader = DataLoader(
         train_joint_dataset,
