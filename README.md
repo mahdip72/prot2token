@@ -38,8 +38,9 @@ only protein sequences. </p>
 - [x] Add the code for the Prot2Token model
 - [x] Save decoder tokenizer in saving directory
 - [ ] Add inference code
-- [ ] Add the pre-trained models
+- [ ] Add the pre-trained models to use them for prediction
 - [x] Add datasets
+- [ ] Continue training of a pre-trained model on new tasks with new vocab sizes 
 
 ## Setup
 
