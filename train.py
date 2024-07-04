@@ -11,6 +11,7 @@ from utils.utils import load_configs, test_gpu_cuda, prepare_tensorboard, prepar
 from dataset import prepare_dataloaders
 from model import prepare_models
 from accelerate import Accelerator
+from accelerate import DataLoaderConfiguration
 from metrics import prepare_metrics_dict, compute_metrics, initializing_monitoring_metrics, compute_all_metrics
 from utils.log import training_tensorboard_log, validation_tensorboard_log, evaluation_log, training_log
 
@@ -151,10 +152,11 @@ def main(dict_config, config_file_path):
     dataloaders_dict, encoder_tokenizer, decoder_tokenizer = prepare_dataloaders(configs, logging, result_path)
     logging.info('preparing dataloaders are done')
 
+    dataloader_config = DataLoaderConfiguration(dispatch_batches=True)
     accelerator = Accelerator(
+        dataloader_config=dataloader_config,
         mixed_precision=configs.train_settings.mixed_precision,
         gradient_accumulation_steps=configs.train_settings.grad_accumulation,
-        dispatch_batches=True
     )
 
     net = prepare_models(configs, encoder_tokenizer, decoder_tokenizer, logging, accelerator)
