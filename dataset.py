@@ -538,7 +538,7 @@ def prepare_dataloaders(configs, logging, result_path):
         batch_size=configs.train_settings.batch_size,
         shuffle=configs.train_settings.shuffle,
         num_workers=configs.train_settings.num_workers,
-        pin_memory=False,
+        pin_memory=True,
     )
     dataloaders_dict["train"] = train_dataloader
 
@@ -570,7 +570,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["phosphorylation"] = valid_phosphorylation_dataloader
 
@@ -591,7 +591,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["localization"] = valid_localization_dataloader
 
@@ -622,7 +622,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["localization_deeploc"] = valid_localization_deeploc_dataloader
 
@@ -650,7 +650,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["fold"] = valid_fold_dataloader
 
@@ -679,7 +679,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["enzyme_reaction"] = valid_enzyme_reaction_dataloader
 
@@ -707,7 +707,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["human_ppi"] = valid_human_ppi_dataloader
 
@@ -737,7 +737,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["structure_similarity"] = valid_structure_similarity_dataloader
 
@@ -767,7 +767,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["protein_protein_interface"] = valid_protein_protein_interface_dataloader
 
@@ -796,7 +796,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["fluorescence"] = valid_fluorescence_dataloader
 
@@ -825,7 +825,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["stability"] = valid_stability_dataloader
 
@@ -854,7 +854,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["protein_ligand_affinity"] = valid_protein_ligand_affinity_dataloader
 
@@ -881,7 +881,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["auxiliary"] = valid_auxiliary_dataloader
 
@@ -910,7 +910,7 @@ def prepare_dataloaders(configs, logging, result_path):
             batch_size=configs.valid_settings.batch_size,
             shuffle=False,
             num_workers=configs.valid_settings.num_workers,
-            pin_memory=False,
+            pin_memory=True,
         )
         dataloaders_dict['valids']["amino_to_fold_seek"] = valid_amino_to_fold_seek_dataloader
 
