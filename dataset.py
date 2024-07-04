@@ -531,7 +531,7 @@ def prepare_dataloaders(configs, logging, result_path):
 
     # Save the tokenizer index to token dictionary in yaml format in saving directory
     with open(os.path.join(result_path, "decoder_tokenizer.yaml"), "w") as f:
-        yaml.dump(decoder_tokenizer.index_token_dict, f)
+        yaml.dump(decoder_tokenizer.tokens_dict, f)
 
     train_dataloader = DataLoader(
         train_joint_dataset,
