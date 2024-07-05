@@ -446,8 +446,7 @@ class Tokenizer:
         self.tokens_dict['<pad>'] = 0
         self.tokens_dict['<bos>'] = 1
         self.tokens_dict['<eos>'] = 2
-        self.tokens_dict['<sep>'] = 3
-        # self.tokens_dict['-'] = 4
+        # self.tokens_dict['<sep>'] = 3
 
         for task_token in tasks_tokens_list:
             self.tokens_dict[task_token] = max(list(self.tokens_dict.values())) + 1
@@ -456,7 +455,7 @@ class Tokenizer:
         # for i in range(5):
         #     self.tokens_dict[f"dummy_{i}"] = max(list(self.tokens_dict.values())) + 1
 
-        task_attributes = [
+        task_attributes_1 = [
             configs.tasks.phosphorylation,
             configs.tasks.localization,
             configs.tasks.auxiliary,
@@ -468,10 +467,19 @@ class Tokenizer:
                 if f'{i}' not in self.tokens_dict.keys():
                     self.tokens_dict[f'{i}'] = max(list(self.tokens_dict.values())) + 1
 
-        if any(task_attributes):
+        if any(task_attributes_1):
             for i in range(max_label_index + 1):
                 if f'{i}' not in self.tokens_dict.keys():
                     self.tokens_dict[f'{i}'] = max(list(self.tokens_dict.values())) + 1
+
+        task_attributes_2 = [
+            configs.tasks.phosphorylation,
+            configs.tasks.protein_protein_interface,
+        ]
+
+        if any(task_attributes_2):
+            if '<sep>' not in self.tokens_dict.keys():
+                self.tokens_dict['<sep>'] = max(list(self.tokens_dict.values())) + 1
 
         for class_token in label_tokens:
             if class_token not in self.tokens_dict.keys():
