@@ -511,6 +511,21 @@ class Tokenizer:
         return encoded_target
 
 
+class InferenceTokenizer:
+    def __init__(self, token_dict):
+        self.tokens_dict = token_dict
+        self.index_token_dict = self.update_index_token_dict()
+        self.vocab_size = len(self.tokens_dict)
+
+    def update_index_token_dict(self):
+        return {value: key for key, value in self.tokens_dict.items()}
+
+    def __call__(self,
+                 task_name: int):
+        encoded_target = [self.tokens_dict['<bos>'], self.tokens_dict[task_name]]
+        return encoded_target
+
+
 def prepare_tensorboard(result_path):
     train_path = os.path.join(result_path, 'train')
     val_path = os.path.join(result_path, 'val')

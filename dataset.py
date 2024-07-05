@@ -2,9 +2,10 @@ import os
 import random
 import torch
 import yaml
+import pandas as pd
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
-from utils.utils import Tokenizer, calculate_class_weights, independent_exponential_smoothing
+from utils.utils import Tokenizer, InferenceTokenizer, calculate_class_weights, independent_exponential_smoothing
 from transformers import AutoTokenizer
 from tasks.localization import prepare_localization_samples
 from tasks.fold import prepare_fold_samples
@@ -1566,6 +1567,120 @@ def prepare_dataloaders(configs, logging, result_path):
             dataloaders_dict['tests']["protein_protein_interface"] = test_protein_protein_interface_dataloader
 
     return dataloaders_dict, encoder_tokenizer, decoder_tokenizer
+
+
+class InferenceDataset(torch.utils.data.Dataset):
+    def __init__(self, configs, **kwargs):
+        self.configs = configs
+        self.inference_configs = kwargs["inference_configs"]
+        self.molecule_encoder_tokenizer = kwargs["molecule_encoder_tokenizer"]
+        self.protein_encoder_tokenizer = kwargs["protein_encoder_tokenizer"]
+        self.decoder_tokenizer = kwargs["decoder_tokenizer"]
+        self.max_protein_encoder_length = configs.prot2token_model.protein_encoder.max_len
+        self.max_molecule_encoder_length = configs.prot2token_model.molecule_encoder.max_len
+        self.max_decoder_length = configs.prot2token_model.decoder.max_len
+        self.items = self.get_input_task_pairs(self.inference_configs.data_path)[:20]
+
+        self.max_protein_encoder_length = configs.prot2token_model.protein_encoder.max_len
+        self.max_molecule_encoder_length = configs.prot2token_model.molecule_encoder.max_len
+        self.max_decoder_length = configs.prot2token_model.decoder.max_len
+
+    def __len__(self):
+        return len(self.items)
+
+    @staticmethod
+    def get_input_task_pairs(csv_path):
+        """
+        Reads a CSV file and returns a list of (input, task_name) pairs.
+
+        Parameters:
+        csv_path (str): The directory path to the CSV file.
+
+        Returns:
+        list: A list containing (input, task_name) pairs.
+        """
+        # Read the CSV file
+        df = pd.read_csv(csv_path)
+
+        # Create the list of (input, task_name) pairs
+        pairs = [(row['input'], '<task_stability>') for _, row in df.iterrows()]
+
+        return pairs
+
+    def __getitem__(self, idx):
+        sequence, task_name = self.items[idx]
+
+        encoded_target = self.decoder_tokenizer(task_name=task_name)
+
+        if len(sequence) == 3:
+            smiles_sequence = sequence[2]
+            sequence = sequence[0]
+        else:
+            smiles_sequence = ""
+
+        if self.protein_encoder_tokenizer:
+            encoded_protein_sequence = self.protein_encoder_tokenizer(
+                sequence, max_length=self.max_protein_encoder_length,
+                padding='max_length',
+                truncation=True,
+                return_tensors="pt"
+            )
+
+            encoded_protein_sequence['input_ids'] = torch.squeeze(encoded_protein_sequence['input_ids'])
+            encoded_protein_sequence['attention_mask'] = torch.squeeze(encoded_protein_sequence['attention_mask'])
+        else:
+            encoded_protein_sequence = torch.LongTensor(torch.zeros(1, 64, 320))
+
+        if self.molecule_encoder_tokenizer:
+            encoded_molecule_sequence = self.molecule_encoder_tokenizer(smiles_sequence,
+                                                                        max_length=self.max_molecule_encoder_length,
+                                                                        padding='max_length',
+                                                                        truncation=True,
+                                                                        return_tensors="pt",
+                                                                        add_special_tokens=True
+                                                                        )
+
+            encoded_molecule_sequence['input_ids'] = torch.squeeze(encoded_molecule_sequence['input_ids'])
+            encoded_molecule_sequence['attention_mask'] = torch.squeeze(encoded_molecule_sequence['attention_mask'])
+        else:
+            encoded_molecule_sequence = torch.LongTensor(torch.zeros(1, 64, 320))
+
+        encoded_target = torch.LongTensor(encoded_target)
+
+        return encoded_protein_sequence, encoded_target, encoded_molecule_sequence, sequence, task_name
+
+
+def prepare_inference_dataloader(configs, inference_configs):
+    protein_encoder_tokenizer = AutoTokenizer.from_pretrained(configs.prot2token_model.protein_encoder.model_name)
+
+    molecule_encoder_tokenizer = AutoTokenizer.from_pretrained("gayane/BARTSmiles",
+                                                               add_prefix_space=True)
+    molecule_encoder_tokenizer.pad_token = '<pad>'
+    molecule_encoder_tokenizer.bos_token = '<s>'
+    molecule_encoder_tokenizer.eos_token = '</s>'
+    molecule_encoder_tokenizer.mask_token = '<unk>'
+
+    with open(inference_configs.decoder_tokenizer_path) as file:
+        decoder_tokenizer_dict = yaml.full_load(file)
+
+    decoder_tokenizer = InferenceTokenizer(decoder_tokenizer_dict)
+
+    inference_dataset = InferenceDataset(configs,
+                                         inference_configs=inference_configs,
+                                         molecule_encoder_tokenizer=molecule_encoder_tokenizer,
+                                         protein_encoder_tokenizer=protein_encoder_tokenizer,
+                                         decoder_tokenizer=decoder_tokenizer)
+
+    if inference_configs.batch_size > 1:
+        RuntimeError("Does not support batch size > 1 for inference. Please set batch size to 1.")
+
+    inference_dataloader = torch.utils.data.DataLoader(
+        inference_dataset,
+        batch_size=inference_configs.batch_size,
+        shuffle=False,
+        num_workers=inference_configs.num_workers,
+    )
+    return inference_dataloader, protein_encoder_tokenizer, molecule_encoder_tokenizer, decoder_tokenizer
 
 
 if __name__ == '__main__':
