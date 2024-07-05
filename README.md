@@ -37,7 +37,7 @@ only protein sequences. </p>
 
 - [x] Add the code for the Prot2Token model
 - [x] Save decoder tokenizer in saving directory
-- [ ] Add inference code
+- [x] Add inference code
 - [ ] Add the pre-trained models to use them for prediction
 - [x] Add datasets
 - [ ] Continue training of a pre-trained model on new tasks with new vocab sizes 
@@ -104,6 +104,42 @@ You might not use accelerator to run the `train.py` script if you just want to *
 so, simply after setting the `config.yaml` file
 run the code by `python train.py`. It should be noted that accelerate supports both single gpu and distributed
 training. So, you can use it for your final training.
+
+## Inference
+
+To run the inference code for a pre-trained model on a set of sequences, first you have to set the 
+`inference_config.yaml` file. You need to have access to the result directory of the pre-trained model
+including best checkpoint and config file to be able to run the inference code.
+The `inference_config.yaml` file is set as the following:
+
+```yaml
+checkpoint_path: /path/to/checkpoint.pth
+result_config_path: /path/to/config.yaml
+decoder_tokenizer_path: /path/to/decoder_tokenizer.yaml
+result_path: /path/to/inference/results/
+data_path: /path/to/inference/data.csv
+
+compile_model: False
+tqdm_progress_bar: True
+fix_seed: 0
+batch_size: 1
+num_workers: 0
+  ```
+
+For data_path, you need to set the path to a csv file that contains the data you want to run the inference on. The csv
+file need to have the following columns:
+```csv
+sequence, task_name
+```
+
+Then, run the following command:
+
+```commandline
+accelerate launch inference.py --config_path configs/<inferenece_config_name>
+```
+
+After running the inference code, you can find the results in the `inference_results.csv` file in `result_path`
+directory that you have set in the `inference_config.yaml` file.
 
 ## Important Considerations
 
