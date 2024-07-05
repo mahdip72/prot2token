@@ -129,7 +129,7 @@ num_workers: 0
 For data_path, you need to set the path to a csv file that contains the data you want to run the inference on. The csv
 file need to have the following columns:
 ```csv
-sequence, task_name
+input, task_name
 ```
 
 Then, run the following command:
