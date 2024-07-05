@@ -38,9 +38,9 @@ only protein sequences. </p>
 - [x] Add the code for the Prot2Token model
 - [x] Save decoder tokenizer in saving directory
 - [x] Add inference code
-- [ ] Add the pre-trained models to use them for prediction
+- [x] Add the pre-trained models to use them for prediction
 - [x] Add datasets
-- [ ] Continue training of a pre-trained model on new tasks with new vocab sizes 
+- [ ] Continue training of a pre-trained model on new tasks with new vocab sizes
 
 ## Setup
 
@@ -68,7 +68,8 @@ bash install.sh
 
 You can download the datasets
 from [this](https://mailmissouri-my.sharepoint.com/:f:/g/personal/mpngf_umsystem_edu/EplpatYuvHlNpsRUL9oAknwB2UKActKh7P3veMGe8DDuSw?e=U8hiFF)
-link. Then, set up the directory of the datasets folder in the `configs/config.yaml` file, data_path names like the following:
+link. Then, set up the directory of the datasets folder in the `configs/config.yaml` file, data_path names like the
+following:
 
 ```yaml
 train_settings:
@@ -85,7 +86,8 @@ test_settings:
   data_path: <path_to_datasets_folder>
   ```
 
-All the datasets that we used in the project can be found in the datasets folder. They are preprocessed and ready to use.
+All the datasets that we used in the project can be found in the datasets folder. They are preprocessed and ready to
+use.
 You can use them to train the model.
 
 ## Training
@@ -107,9 +109,9 @@ training. So, you can use it for your final training.
 
 ## Inference
 
-To run the inference code for a pre-trained model on a set of sequences, first you have to set the 
+To run the inference code for a pre-trained model on a set of sequences, first you have to set the
 `inference_config.yaml` file. You need to have access to the result directory of the pre-trained model
-including best checkpoint and config file to be able to run the inference code.
+including best checkpoint and config file to be able to run the inference code (refer to pre-trained models section)
 The `inference_config.yaml` file is set as the following:
 
 ```yaml
@@ -128,6 +130,7 @@ num_workers: 0
 
 For data_path, you need to set the path to a csv file that contains the data you want to run the inference on. The csv
 file need to have the following columns:
+
 ```csv
 input, task_name
 ```
@@ -140,6 +143,17 @@ accelerate launch inference.py --config_path configs/<inferenece_config_name>
 
 After running the inference code, you can find the results in the `inference_results.csv` file in `result_path`
 directory that you have set in the `inference_config.yaml` file.
+
+## Pretrained Models
+
+In the following table, you can find the pre-trained models that we have used in the paper. You can download them from
+the following links:
+
+| Model Name | Task         | Download Link                                                                                                                                            |
+|------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Prot2Token | Fluorescence | [Download](https://mailmissouri-my.sharepoint.com/:f:/r/personal/mpngf_umsystem_edu/Documents/Github/Prot2Token/pre-trained_models?csf=1&web=1&e=32q99b) |
+
+We will add more pre-trained models in the future.
 
 ## Important Considerations
 
