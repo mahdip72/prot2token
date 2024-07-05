@@ -315,7 +315,7 @@ class Decoder(nn.Module):
         preds = preds.transpose(0, 1)
         return self.output(preds)
 
-    def inference(self, protein_encoder_out, molecule_encoder_out, tgt):
+    def prediction(self, protein_encoder_out, molecule_encoder_out, tgt):
         # Initialize the generated sequence with the initial token
         predicted_sequence = tgt[..., :1]
         generated_tokens = tgt[..., :2]
@@ -341,6 +341,27 @@ class Decoder(nn.Module):
         padded_sequence[:, :, 0] = 1
         return torch.cat([predicted_sequence, padded_sequence], dim=1)
 
+    def inference_greedy(self, protein_encoder_out, molecule_encoder_out, tgt):
+        # Initialize the generated sequence with the initial token
+        generated_tokens = tgt[..., :2]
+
+        # Loop over the range of maximum sequence length
+        for _ in range(self.max_len-2):
+            # Generate the next token using the `forward` method
+            predicted_sequence = self(protein_encoder_out, molecule_encoder_out, generated_tokens)
+
+            # Get the id of the token with the highest probability
+            next_token_id = predicted_sequence.argmax(dim=-1)[..., -1:]
+
+            # Concatenate the predicted token with the existing sequence
+            generated_tokens = torch.cat([generated_tokens, next_token_id], dim=-1)
+
+            # If the predicted token is an `<eos>` token, break the loop
+            if next_token_id.item() == self.decoder_tokenizer.tokens_dict['<eos>']:
+                break
+
+        return generated_tokens
+
 
 class EncoderDecoder(nn.Module):
     def __init__(self, protein_encoder, molecule_encoder, decoder, configs):
@@ -351,21 +372,24 @@ class EncoderDecoder(nn.Module):
         self.configs = configs
         self.dummy_representation = torch.zeros(1, self.configs.prot2token_model.molecule_encoder.max_len, self.decoder.dim)
 
-    def forward(self, batch, inference=False):
+    def forward(self, batch, mode=False):
         protein_encoder_out = self.protein_encoder(batch)
         if self.configs.prot2token_model.molecule_encoder.enable:
             molecule_encoder_out = self.molecule_encoder(batch)
         else:
             molecule_encoder_out = self.dummy_representation
 
-        if not inference:
-            preds = self.decoder(protein_encoder_out, molecule_encoder_out, batch["target_input"])
+        if mode == 'prediction':
+            preds = self.decoder.prediction(protein_encoder_out, molecule_encoder_out, batch["target_input"])
+        elif mode == 'inference_greedy':
+            preds = self.decoder.inference_greedy(protein_encoder_out, molecule_encoder_out, batch["target_input"])
         else:
-            preds = self.decoder.inference(protein_encoder_out, molecule_encoder_out, batch["target_input"])
+            preds = self.decoder(protein_encoder_out, molecule_encoder_out, batch["target_input"])
+
         return preds
 
 
-def prepare_models(configs, encoder_tokenizer, decoder_tokenizer, logging, accelerator):
+def prepare_models(configs, encoder_tokenizer, decoder_tokenizer, logging, accelerator, inference=False):
     """
     Prepare the encoder, decoder, and the encoder-decoder model.
 
@@ -386,6 +410,13 @@ def prepare_models(configs, encoder_tokenizer, decoder_tokenizer, logging, accel
                                      encoder_tokenizer=encoder_tokenizer
                                      )
 
+    if inference:
+        # freeze all parameters
+        for param in protein_encoder.parameters():
+            param.requires_grad = False
+        if accelerator.is_main_process:
+            logging.info(f'freeze all protein parameters for inference')
+
     if accelerator.is_main_process:
         print_trainable_parameters(protein_encoder, logging, 'protein encoder')
 
@@ -396,6 +427,13 @@ def prepare_models(configs, encoder_tokenizer, decoder_tokenizer, logging, accel
                                            out_dim=configs.prot2token_model.decoder.dimension,
                                            configs=configs,
                                            )
+        if inference:
+            # freeze all parameters
+            for param in molecule_encoder.parameters():
+                param.requires_grad = False
+            if accelerator.is_main_process:
+                logging.info(f'freeze all molecule parameters for inference')
+
         if accelerator.is_main_process:
             print_trainable_parameters(molecule_encoder, logging, 'molecule encoder')
 
@@ -417,12 +455,25 @@ def prepare_models(configs, encoder_tokenizer, decoder_tokenizer, logging, accel
                       activation_function=configs.prot2token_model.decoder.activation_function,
                       decoder_tokenizer=decoder_tokenizer,
                       configs=configs)
+    if inference:
+        # freeze all parameters
+        for param in decoder.parameters():
+            param.requires_grad = False
+        if accelerator.is_main_process:
+            logging.info(f'freeze all decoder parameters for inference')
 
     if accelerator.is_main_process:
         print_trainable_parameters(decoder, logging, 'decoder')
 
     # Prepare the encoder-decoder model.
     final_model = EncoderDecoder(protein_encoder, molecule_encoder, decoder, configs)
+
+    if inference:
+        # freeze all parameters
+        for param in final_model.parameters():
+            param.requires_grad = False
+        if accelerator.is_main_process:
+            logging.info(f'freezed all parameters for inference')
 
     if accelerator.is_main_process:
         # logging.info(f'supermodel all parameters: {sum(p.numel() for p in final_model.parameters()): ,}')

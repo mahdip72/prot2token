@@ -113,7 +113,7 @@ def evaluation(accelerator, dataloader, tools, name, configs, mode):
                  "target_input": target_input}
 
         with torch.inference_mode():
-            preds = tools['net'](batch, inference=True)
+            preds = tools['net'](batch, mode="prediction")
             loss = tools['loss_function'](preds.reshape(-1, preds.shape[-1]), target_expected.reshape(-1))
             weights = torch.ones(loss.shape).to(accelerator.device)
             weights[..., 0] = 0

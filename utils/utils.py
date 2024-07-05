@@ -164,12 +164,13 @@ def k_batches(data, k):
     return batches
 
 
-def load_configs(config):
+def load_configs(config, inference=False):
     """
         Load the configuration file and convert the necessary values to floats.
 
         Args:
             config (dict): The configuration dictionary.
+            inference (bool): A boolean flag to indicate if the configuration is for inference.
 
         Returns:
             The updated configuration dictionary with float values.
@@ -178,21 +179,23 @@ def load_configs(config):
     # Convert the dictionary to a Box object for easier access to the values.
     tree_config = Box(config)
 
-    # Convert the necessary values to floats.
-    tree_config.optimizer.lr = float(tree_config.optimizer.lr)
-    tree_config.optimizer.decay.min_lr = float(tree_config.optimizer.decay.min_lr)
-    tree_config.optimizer.weight_decay = float(tree_config.optimizer.weight_decay)
-    tree_config.optimizer.eps = float(tree_config.optimizer.eps)
+    if not inference:
+        # Convert the necessary values to floats.
+        tree_config.optimizer.lr = float(tree_config.optimizer.lr)
+        tree_config.optimizer.decay.min_lr = float(tree_config.optimizer.decay.min_lr)
+        tree_config.optimizer.weight_decay = float(tree_config.optimizer.weight_decay)
+        tree_config.optimizer.eps = float(tree_config.optimizer.eps)
     return tree_config
 
 
-def prepare_saving_dir(configs, config_file_path):
+def prepare_saving_dir(configs, config_file_path, inference_result=False):
     """
     Prepare a directory for saving a training results.
 
     Args:
         configs: A python box object containing the configuration options.
         config_file_path: Directory of configuration file.
+        inference_result: A boolean flag to indicate if the results are for inference.
 
     Returns:
         str: The path to the directory where the results will be saved.
@@ -208,7 +211,8 @@ def prepare_saving_dir(configs, config_file_path):
     result_path = os.path.abspath(os.path.join(configs.result_path, run_id))
     checkpoint_path = os.path.join(result_path, 'checkpoints')
     Path(result_path).mkdir(parents=True, exist_ok=True)
-    Path(checkpoint_path).mkdir(parents=True, exist_ok=True)
+    if not inference_result:
+        Path(checkpoint_path).mkdir(parents=True, exist_ok=True)
 
     # Copy the config file to the result directory.
     shutil.copy(config_file_path, result_path)
@@ -307,10 +311,12 @@ def load_checkpoints(configs, optimizer, scheduler, logging, net, accelerator):
                         min_size = min(model_state_dict[name].size(1), param.size(1))
                         model_state_dict[name][:, :min_size].copy_(param[:, :min_size])
                     if accelerator.is_main_process:
-                        logging.info(f'Copied overlapping parts of this layer: {name}, Checkpoint shape: {param.size()}, Model shape: {model_state_dict[name].size()}')
+                        logging.info(
+                            f'Copied overlapping parts of this layer: {name}, Checkpoint shape: {param.size()}, Model shape: {model_state_dict[name].size()}')
                 else:
                     if accelerator.is_main_process:
-                        logging.info(f'Ignore {name} layer, missmatch: Checkpoint shape: {param.size()}, Model shape: {model_state_dict[name].size()}')
+                        logging.info(
+                            f'Ignore {name} layer, missmatch: Checkpoint shape: {param.size()}, Model shape: {model_state_dict[name].size()}')
             else:
                 if accelerator.is_main_process:
                     logging.info(f'Ignore {name} layer, missmatch name')
@@ -336,6 +342,38 @@ def load_checkpoints(configs, optimizer, scheduler, logging, net, accelerator):
         if accelerator.is_main_process:
             logging.info('Model is loaded to resume training!')
     return net, start_epoch
+
+
+def load_checkpoints_inference(checkpoint_path, logging, net):
+    """
+    Load a PyTorch checkpoint from a specified path into the provided model.
+
+    Args:
+        checkpoint_path (str): The file path to the checkpoint.
+        logging (Logger): Logger for logging messages.
+        net (torch.nn.Module): The model into which the checkpoint will be loaded.
+
+    Returns:
+        torch.nn.Module: The model with loaded checkpoint weights.
+    """
+    # Check if the checkpoint file exists
+    if not os.path.exists(checkpoint_path):
+        logging.error(f"Checkpoint file does not exist at {checkpoint_path}")
+        return net
+
+    # Load the checkpoint
+    checkpoint = torch.load(checkpoint_path, map_location='cpu')
+
+    # Removing the prefix "_orig_mod." from the keys of the model checkpoint if it exists.
+    checkpoint['model_state_dict'] = remove_prefix_from_keys(checkpoint['model_state_dict'],
+                                                             '_orig_mod.')
+
+    # Load state dict into the model
+    net.load_state_dict(checkpoint['model_state_dict'], strict=True)
+
+    logging.info(f"Checkpoint loaded successfully from {checkpoint_path}")
+
+    return net
 
 
 def save_checkpoint(epoch: int, model_path: str, tools: dict, accelerator: Accelerator):
