@@ -1,0 +1,11 @@
+checkpoint_path: /path/to/checkpoint.pth
+result_config_path: /path/to/config.yaml
+decoder_tokenizer_path: /path/to/decoder_tokenizer.yaml
+result_path: /path/to/inference/results/
+data_path: /path/to/inference/data.csv
+
+compile_model: False
+tqdm_progress_bar: True
+fix_seed: 0
+batch_size: 1
+num_workers: 0
