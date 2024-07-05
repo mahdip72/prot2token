@@ -1579,7 +1579,7 @@ class InferenceDataset(torch.utils.data.Dataset):
         self.max_protein_encoder_length = configs.prot2token_model.protein_encoder.max_len
         self.max_molecule_encoder_length = configs.prot2token_model.molecule_encoder.max_len
         self.max_decoder_length = configs.prot2token_model.decoder.max_len
-        self.items = self.get_input_task_pairs(self.inference_configs.data_path)[:20]
+        self.items = self.get_input_task_pairs(self.inference_configs.data_path)
 
         self.max_protein_encoder_length = configs.prot2token_model.protein_encoder.max_len
         self.max_molecule_encoder_length = configs.prot2token_model.molecule_encoder.max_len
@@ -1603,7 +1603,7 @@ class InferenceDataset(torch.utils.data.Dataset):
         df = pd.read_csv(csv_path)
 
         # Create the list of (input, task_name) pairs
-        pairs = [(row['input'], '<task_stability>') for _, row in df.iterrows()]
+        pairs = [(row['input'], row['task_name']) for _, row in df.iterrows()]
 
         return pairs
 
