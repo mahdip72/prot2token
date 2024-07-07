@@ -149,9 +149,11 @@ directory that you have set in the `inference_config.yaml` file.
 In the following table, you can find the pre-trained models that we have used in the paper. You can download them from
 the following links:
 
-| Model Name | Task         | Download Link                                                                                                                                            |
-|------------|--------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Prot2Token | Fluorescence | [Download](https://mailmissouri-my.sharepoint.com/:f:/r/personal/mpngf_umsystem_edu/Documents/Github/Prot2Token/pre-trained_models?csf=1&web=1&e=32q99b) |
+| Model Name | Task         | Auxiliary Tasks |Download Link                                                                                                                                            |
+|------------|--------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Prot2Token | Fluorescence | PLA             |[Download](https://mailmissouri-my.sharepoint.com/:f:/r/personal/mpngf_umsystem_edu/Documents/Github/Prot2Token/pre-trained_models?csf=1&web=1&e=32q99b) |
+| Prot2Token | Stability    | -               |[Download](https://mailmissouri-my.sharepoint.com/:f:/r/personal/mpngf_umsystem_edu/Documents/Github/Prot2Token/pre-trained_models?csf=1&web=1&e=32q99b) |
+
 
 We will add more pre-trained models in the future.
 
