@@ -29,7 +29,7 @@ def inference(net, dataloader, configs, decoder_tokenizer, mode):
             preds = net(batch, mode="inference_greedy")
             preds = preds.detach().cpu().numpy().tolist()[0]
             preds = [decoder_tokenizer.index_token_dict[pred] for pred in preds[2:-1]]
-            results.append([sequence[0], task_name[0], ''.join(preds)])
+            results.append([sequence[0], task_name[0], ' '.join(preds)])
         counter += 1
 
     return results
