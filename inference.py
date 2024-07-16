@@ -18,6 +18,12 @@ def inference(net, dataloader, configs, decoder_tokenizer, mode):
     counter = 0
     results = []
     net.eval()
+
+    inference_config = {
+        "beam_width": (configs.beam_search.beam_width,),
+        "temperature": (configs.beam_search.temperature,),
+        "top_k": configs.beam_search.top_k
+    }
     for i, data in enumerate(tqdm(dataloader, desc=f'{mode}', total=len(dataloader),
                                   leave=False, disable=not configs.tqdm_progress_bar)):
         protein_sequence, target, molecule_sequence, sequence, task_name = data
@@ -26,7 +32,7 @@ def inference(net, dataloader, configs, decoder_tokenizer, mode):
                  "target_input": target}
 
         with torch.inference_mode():
-            preds = net(batch, mode=configs.inference_type, configs=configs)
+            preds = net(batch, mode=configs.inference_type, inference_config=inference_config)
             preds = preds.detach().cpu().numpy().tolist()[0]
             preds = [decoder_tokenizer.index_token_dict[pred] for pred in preds[2:-1]]
             results.append([sequence[0], task_name[0], configs.merging_character.join(preds)])

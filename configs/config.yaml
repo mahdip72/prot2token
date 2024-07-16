@@ -71,6 +71,11 @@ test_settings:
   data_path: /path/to/dataset/
   batch_size: 1
   num_workers: 0
+  inference_type: inference_greedy # inference_beam_search, inference_greedy
+  beam_search:
+      top_k: 1
+      beam_width: 3
+      temperature: 1.0
   monitoring_metrics:
     phosphorylation: f1
     fluorescence: spearman

@@ -68,7 +68,8 @@ def train(epoch, accelerator, tools, global_step, configs):
                     accelerator.gather_for_metrics(preds.detach()),
                     accelerator.gather_for_metrics(target_expected.detach()),
                     tools['decoder_tokenizer'], metrics_dict,
-                    accelerator
+                    accelerator,
+                    mode='train'
                 )
 
             accelerator.backward(loss)
@@ -103,6 +104,17 @@ def evaluation(accelerator, dataloader, tools, name, configs, mode):
     valid_loss = 0
     counter = 0
     metrics_dict = prepare_metrics_dict(accelerator)
+
+    if mode == 'test':
+        inference_mode = 'inference_greedy'
+    else:
+        inference_mode = 'prediction'
+
+    inference_config = {
+        "beam_width": (configs.test_settings.beam_search.beam_width,),
+        "temperature": (configs.test_settings.beam_search.temperature,),
+        "top_k": configs.test_settings.beam_search.top_k
+    }
     for i, data in enumerate(tqdm(dataloader, desc=f'{mode} {name}', total=len(dataloader),
                                   leave=False, disable=not configs.tqdm_progress_bar)):
         protein_sequence, target, sample_weight, molecule_sequence = data
@@ -113,17 +125,23 @@ def evaluation(accelerator, dataloader, tools, name, configs, mode):
                  "target_input": target_input}
 
         with torch.inference_mode():
-            preds = tools['net'](batch, mode="prediction")
-            loss = tools['loss_function'](preds.reshape(-1, preds.shape[-1]), target_expected.reshape(-1))
-            weights = torch.ones(loss.shape).to(accelerator.device)
-            weights[..., 0] = 0
-            loss = torch.mean(loss * weights, dim=-1)
+            preds = tools['net'](batch, mode=inference_mode, inference_config=inference_config)
+            if mode != 'test':
+                loss = tools['loss_function'](preds.reshape(-1, preds.shape[-1]), target_expected.reshape(-1))
+                weights = torch.ones(loss.shape).to(accelerator.device)
+                weights[..., 0] = 0
+                loss = torch.mean(loss * weights, dim=-1)
+            else:
+                loss = torch.tensor(0)
+                # preds = preds.float().argmax(dim=-1).cpu().numpy()
+                preds = preds.cpu().numpy()
 
         metrics_dict = compute_metrics(
-            accelerator.gather_for_metrics(preds.detach()),
-            accelerator.gather_for_metrics(target_expected.detach()),
+            accelerator.gather_for_metrics(preds),
+            accelerator.gather_for_metrics(target_expected),
             tools['decoder_tokenizer'], metrics_dict,
-            accelerator
+            accelerator,
+            mode=mode
         )
         counter += 1
         valid_loss += loss.data.item()

@@ -426,9 +426,9 @@ class EncoderDecoder(nn.Module):
             preds = self.decoder.inference_greedy(protein_encoder_out, molecule_encoder_out, batch["target_input"])
         elif mode == 'inference_beam_search':
             preds = self.decoder.inference_beam_search(protein_encoder_out, molecule_encoder_out, batch["target_input"],
-                                                       kwargs['configs'].beam_search.beam_width,
-                                                       kwargs['configs'].beam_search.temperature,
-                                                       kwargs['configs'].beam_search.top_k)
+                                                       kwargs['inference_config']["beam_width"],
+                                                       kwargs['inference_config']["temperature"],
+                                                       kwargs['inference_config']["top_k"])
         else:
             preds = self.decoder(protein_encoder_out, molecule_encoder_out, batch["target_input"])
 
