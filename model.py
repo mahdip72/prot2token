@@ -5,6 +5,7 @@ from timm.models.layers import trunc_normal_
 from transformers import EsmModel
 from transformers import AutoTokenizer, AutoModel
 from transformers import pipeline
+import torch.nn.functional as F
 from peft import LoraConfig, PeftConfig, get_peft_model, prepare_model_for_kbit_training
 
 
@@ -321,7 +322,7 @@ class Decoder(nn.Module):
         generated_tokens = tgt[..., :2]
 
         # Loop over the range of maximum sequence length
-        for _ in range(self.max_len-2):
+        for _ in range(self.max_len - 2):
             # Generate the next token using the `forward` method
             predicted_sequence = self(protein_encoder_out, molecule_encoder_out, generated_tokens)
 
@@ -346,7 +347,7 @@ class Decoder(nn.Module):
         generated_tokens = tgt[..., :2]
 
         # Loop over the range of maximum sequence length
-        for _ in range(self.max_len-2):
+        for _ in range(self.max_len - 2):
             # Generate the next token using the `forward` method
             predicted_sequence = self(protein_encoder_out, molecule_encoder_out, generated_tokens)
 
@@ -362,6 +363,45 @@ class Decoder(nn.Module):
 
         return generated_tokens
 
+    def inference_beam_search(self, protein_encoder_out, molecule_encoder_out, tgt, beam_width=1, temperature=1.0,
+                              top_k=1):
+        # Initialize the beam with the initial token
+        beam = [(tgt[..., :2], 0)]  # (sequence, cumulative log probability)
+
+        for _ in range(self.max_len - 2):
+            candidates = []
+            for seq, score in beam:
+                # Generate the next token probabilities using the `forward` method
+                predicted_sequence = self(protein_encoder_out, molecule_encoder_out, seq)
+                next_token_probs = predicted_sequence[..., -1, :]
+
+                # Apply temperature scaling
+                next_token_probs = next_token_probs / temperature
+
+                # Apply top-k sampling
+                topk_probs, topk_indices = torch.topk(next_token_probs, top_k, dim=-1)
+                topk_probs = F.log_softmax(topk_probs, dim=-1)
+
+                # Sample from the top-k probabilities
+                sampled_index = torch.multinomial(torch.exp(topk_probs), 1)
+                next_token_id = topk_indices.gather(-1, sampled_index).squeeze(-1)
+
+                for i in range(next_token_id.size(0)):
+                    candidate_seq = torch.cat([seq[i:i + 1], next_token_id[i:i + 1].unsqueeze(0)], dim=-1)
+                    candidate_score = score + topk_probs[i, sampled_index[i]].item()
+                    candidates.append((candidate_seq, candidate_score))
+
+            # Select the top `beam_width` candidates based on cumulative log probabilities
+            beam = sorted(candidates, key=lambda x: x[1], reverse=True)[:beam_width]
+
+            # If any sequence ends with an `<eos>` token, break the loop
+            if any(self.decoder_tokenizer.tokens_dict['<eos>'] in seq for seq, _ in beam):
+                break
+
+        # Return the best sequence from the beam
+        best_sequence = max(beam, key=lambda x: x[1])[0]
+        return best_sequence
+
 
 class EncoderDecoder(nn.Module):
     def __init__(self, protein_encoder, molecule_encoder, decoder, configs):
@@ -370,9 +410,10 @@ class EncoderDecoder(nn.Module):
         self.molecule_encoder = molecule_encoder
         self.decoder = decoder
         self.configs = configs
-        self.dummy_representation = torch.zeros(1, self.configs.prot2token_model.molecule_encoder.max_len, self.decoder.dim)
+        self.dummy_representation = torch.zeros(1, self.configs.prot2token_model.molecule_encoder.max_len,
+                                                self.decoder.dim)
 
-    def forward(self, batch, mode=False):
+    def forward(self, batch, mode=False, **kwargs):
         protein_encoder_out = self.protein_encoder(batch)
         if self.configs.prot2token_model.molecule_encoder.enable:
             molecule_encoder_out = self.molecule_encoder(batch)
@@ -383,6 +424,11 @@ class EncoderDecoder(nn.Module):
             preds = self.decoder.prediction(protein_encoder_out, molecule_encoder_out, batch["target_input"])
         elif mode == 'inference_greedy':
             preds = self.decoder.inference_greedy(protein_encoder_out, molecule_encoder_out, batch["target_input"])
+        elif mode == 'inference_beam_search':
+            preds = self.decoder.inference_beam_search(protein_encoder_out, molecule_encoder_out, batch["target_input"],
+                                                       kwargs['configs'].beam_search.beam_width,
+                                                       kwargs['configs'].beam_search.temperature,
+                                                       kwargs['configs'].beam_search.top_k)
         else:
             preds = self.decoder(protein_encoder_out, molecule_encoder_out, batch["target_input"])
 

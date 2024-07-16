@@ -9,3 +9,10 @@ tqdm_progress_bar: True
 fix_seed: 0
 batch_size: 1
 num_workers: 0
+merging_character: ""
+inference_type: inference_beam_search # inference_beam_search, inference_greedy
+
+beam_search:
+  top_k: 3
+  beam_width: 3
+  temperature: 1.0
