@@ -1152,6 +1152,8 @@ def merge_items(items_list):
 def compute_metrics(predictions, trues, tokenizer, metrics_dict, accelerator, mode):
     if mode != 'test':
         predictions = predictions.float().argmax(dim=-1).cpu().numpy()
+    else:
+        predictions = predictions.cpu().numpy()
     trues = trues.cpu().numpy()
 
     # Get the indices where '2' appears

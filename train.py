@@ -133,8 +133,6 @@ def evaluation(accelerator, dataloader, tools, name, configs, mode):
                 loss = torch.mean(loss * weights, dim=-1)
             else:
                 loss = torch.tensor(0)
-                # preds = preds.float().argmax(dim=-1).cpu().numpy()
-                preds = preds.cpu().numpy()
 
         metrics_dict = compute_metrics(
             accelerator.gather_for_metrics(preds),
@@ -335,16 +333,20 @@ def main(dict_config, config_file_path):
 
                 model_checkpoint = torch.load(model_path, map_location='cpu')
 
+                tools['net'] = accelerator.unwrap_model(tools['net'])
+
+                # Removing the prefix "_orig_mod." from the keys of the model checkpoint if it exists.
                 if list(model_checkpoint['model_state_dict'].keys())[0].split('.')[0] != list(tools['net'].state_dict().keys())[0].split('.')[0]:
-                    print(list(model_checkpoint['model_state_dict'].keys())[0])
+                    logging.info(f"find mismatch name: {list(model_checkpoint['model_state_dict'].keys())[0]} and "
+                                 f"{list(tools['net'].state_dict().keys())[0]}")
 
                     # Removing the prefix "_orig_mod." from the keys of the model checkpoint if it exists.
                     model_checkpoint['model_state_dict'] = remove_prefix_from_keys(model_checkpoint['model_state_dict'],
-                                                                                   '_orig_mod.')
+                                                                                   f'_orig_mod.')
 
-                    print(list(model_checkpoint['model_state_dict'].keys())[0])
+                    logging.info(f"handle mismatch name: {list(model_checkpoint['model_state_dict'].keys())[0]} and "
+                                 f"{list(tools['net'].state_dict().keys())[0]}")
 
-                tools['net'] = accelerator.unwrap_model(tools['net'])
                 loading_log = tools['net'].load_state_dict(model_checkpoint['model_state_dict'], strict=True)
                 logging.info(f'Loading checkpoint log: {loading_log}')
                 tools['net'] = accelerator.prepare(tools['net'])
