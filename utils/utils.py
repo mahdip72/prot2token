@@ -1,4 +1,5 @@
 import os
+import yaml
 from timm import optim
 from cosine_annealing_warmup import CosineAnnealingWarmupRestarts
 import numpy as np
@@ -269,7 +270,45 @@ def load_opt(model, config, logging):
     return opt, scheduler
 
 
-def load_checkpoints(configs, optimizer, scheduler, logging, net, accelerator):
+def load_embeddings(net, pretrained_state_dict, decoder_tokenizer, configs, logging, accelerator):
+    """
+    Load the pretrained embeddings into the model.
+    """
+    tokenizer_path = os.path.join(os.path.dirname(os.path.dirname(configs.resume.resume_path)),
+                                  'decoder_tokenizer.yaml')
+    if os.path.exists(tokenizer_path):
+        with open(tokenizer_path) as file:
+            pre_trained_tokenizer = yaml.full_load(file)
+    else:
+        pre_trained_tokenizer = None
+
+    loaded_embeddings = []
+    not_loaded_embeddings = []
+    if pre_trained_tokenizer is not None:
+        new_embedding = net.decoder.embedding.weight.data.clone()
+        for new_token_name, new_token_id in decoder_tokenizer.tokens_dict.items():
+            if new_token_name in pre_trained_tokenizer:
+                pre_trained_token_id = pre_trained_tokenizer[new_token_name]
+                new_embedding[new_token_id] = pretrained_state_dict['decoder.embedding.weight'][pre_trained_token_id]
+                loaded_embeddings.append(new_token_name)
+            else:
+                not_loaded_embeddings.append(new_token_name)
+
+        # inplace the new embedding to the model
+        net.decoder.embedding.weight.data = new_embedding
+
+        if accelerator.is_main_process:
+            logging.info(
+                f'Cannot find these tokens: {not_loaded_embeddings} in the tokenizer of pretrained checkpoint.')
+            logging.info(f'Loaded {len(loaded_embeddings)} embeddings of pretrained checkpoint from the'
+                         f' total of {len(decoder_tokenizer.tokens_dict)}.')
+    else:
+        if accelerator.is_main_process:
+            logging.info(f'Cannot find the tokenizer of pretrained checkpoint.')
+    return net, not_loaded_embeddings
+
+
+def load_checkpoints(configs, optimizer, scheduler, logging, net, accelerator, decoder_tokenizer):
     """
     Load saved checkpoints from a previous training session.
 
@@ -279,6 +318,7 @@ def load_checkpoints(configs, optimizer, scheduler, logging, net, accelerator):
         scheduler (Scheduler): The learning rate scheduler to resume training with.
         logging (Logger): The logger to use for logging messages.
         net (nn.Module): The neural network model to load the saved checkpoints into.
+        accelerator (Accelerator): The Accelerator object to use for distributed training.
 
     Returns:
         tuple: A tuple containing the loaded neural network model and the epoch to start training from.
@@ -286,42 +326,36 @@ def load_checkpoints(configs, optimizer, scheduler, logging, net, accelerator):
     start_epoch = 1
 
     # If the 'resume' flag is True, load the saved model checkpoints.
-    if configs.resume.resume:
+    if configs.resume.enable:
         model_checkpoint = torch.load(configs.resume.resume_path, map_location='cpu')
+        model_state_dict = net.state_dict()
+
         # state_dict = model_checkpoint['model_state_dict']
         pretrained_state_dict = model_checkpoint['model_state_dict']
         pretrained_state_dict = {k.replace('_orig_mod.', ''): v for k, v in pretrained_state_dict.items()}
-        model_state_dict = net.state_dict()
 
-        if configs.resume.handle_shape_missmatch:
+        # Load a customized pretrained embeddings into the model
+        net, not_loaded_embeddings = load_embeddings(net, pretrained_state_dict, decoder_tokenizer, configs, logging,
+                                                     accelerator)
+        del pretrained_state_dict['decoder.embedding.weight']  # remove the embeddings from the state_dict
+
+        if model_state_dict['decoder.output.bias'].shape != pretrained_state_dict['decoder.output.bias'].shape and len(
+                not_loaded_embeddings) > 0:
+            # Remove the decoder output layer weights and biases from the pretrained state dict
+            del pretrained_state_dict['decoder.output.weight']
+            del pretrained_state_dict['decoder.output.bias']
             if accelerator.is_main_process:
-                logging.info(f'Consider handling shape miss match to reload the checkpoint.')
+                logging.info('Decoder output layer weights and biases are removed from the pretrained state dict '
+                             'because of using different vocabularies.')
 
-        for name, param in pretrained_state_dict.items():
-            if name in model_state_dict:
-                if model_state_dict[name].size() == param.size():
-                    model_state_dict[name].copy_(param)
-                elif configs.resume.handle_shape_missmatch:
-                    # Copy only the overlapping parts of the tensor
-                    # Assumes the mismatch is in the first dimension
-                    if len(model_state_dict[name].size()) == 2:
-                        min_size = min(model_state_dict[name].size(0), param.size(0))
-                        model_state_dict[name][:min_size].copy_(param[:min_size])
-                    else:
-                        min_size = min(model_state_dict[name].size(1), param.size(1))
-                        model_state_dict[name][:, :min_size].copy_(param[:, :min_size])
-                    if accelerator.is_main_process:
-                        logging.info(
-                            f'Copied overlapping parts of this layer: {name}, Checkpoint shape: {param.size()}, Model shape: {model_state_dict[name].size()}')
-                else:
-                    if accelerator.is_main_process:
-                        logging.info(
-                            f'Ignore {name} layer, missmatch: Checkpoint shape: {param.size()}, Model shape: {model_state_dict[name].size()}')
-            else:
-                if accelerator.is_main_process:
-                    logging.info(f'Ignore {name} layer, missmatch name')
+        if model_state_dict['decoder.decoder_pos_embed'].shape != pretrained_state_dict['decoder.decoder_pos_embed'].shape:
+            # Remove the decoder positional embedding weights from the pretrained state dict
+            del pretrained_state_dict['decoder.decoder_pos_embed']
+            if accelerator.is_main_process:
+                logging.info('Decoder positional embedding is removed from the pretrained state dict '
+                             'because of using different max length.')
 
-        loading_log = net.load_state_dict(model_state_dict, strict=False)
+        loading_log = net.load_state_dict(pretrained_state_dict, strict=False)
         if accelerator.is_main_process:
             logging.info(f'Loading checkpoint log: {loading_log}')
 
