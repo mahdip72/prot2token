@@ -181,10 +181,11 @@ def main(dict_config, config_file_path):
     optimizer, scheduler = prepare_optimizer(net, configs, len(dataloaders_dict["train"]), logging)
     logging.info('preparing optimizer is done')
 
+    net, start_epoch = load_checkpoints(configs, optimizer, scheduler, logging, net, accelerator, decoder_tokenizer)
+
     net, optimizer, dataloaders_dict["train"], scheduler = accelerator.prepare(
         net, optimizer, dataloaders_dict["train"], scheduler
     )
-    net, start_epoch = load_checkpoints(configs, optimizer, scheduler, logging, net, accelerator, decoder_tokenizer)
 
     for name, dataset in dataloaders_dict["valids"].items():
         dataloaders_dict["valids"][name] = accelerator.prepare(dataset)
