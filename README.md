@@ -33,7 +33,7 @@ only protein sequences. </p>
 
 <p align="center"><img src="./figures/1.svg" alt=""></p>
 
-![video](./source/inference.gif)
+[![Watch the video](https://img.youtube.com/vi/YxYzR6zoxSM/maxresdefault.jpg)](https://youtu.be/YxYzR6zoxSM)
 
 # To Do
 
