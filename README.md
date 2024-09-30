@@ -33,6 +33,8 @@ only protein sequences. </p>
 
 <p align="center"><img src="./figures/1.svg" alt=""></p>
 
+[![Watch the video](https://img.youtube.com/vi/YxYzR6zoxSM/maxresdefault.jpg)](https://youtu.be/YxYzR6zoxSM)
+
 # To Do
 
 - [x] Add the code for the Prot2Token model
