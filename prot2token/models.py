@@ -632,6 +632,8 @@ def prepare_models(name, device, compile_model=False):
 
     final_model = load_checkpoints_inference(checkpoint_path, final_model)
 
+    final_model = final_model.to(device)
+
     if compile_model:
         final_model = torch.compile(final_model)
 

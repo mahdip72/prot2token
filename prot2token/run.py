@@ -8,11 +8,9 @@ def test():
 
     net, decoder_tokenizer, inference_configs  = prepare_models(name='fluorescence', device='cuda', compile_model=True)
 
-    net.to('cuda')
-
     samples = pd.read_csv('../inference_data/fluorescence_inference.csv')['input'].tolist()
 
-    results = net.run(samples[:20], merging_character='')
+    results = net.run(samples, merging_character='')
     print(results)
     torch.cuda.empty_cache()
 
