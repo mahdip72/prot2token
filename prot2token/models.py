@@ -440,9 +440,7 @@ class EncoderDecoder(nn.Module):
         else:
             molecule_encoder_out = self.dummy_representation
 
-        if mode == 'prediction':
-            preds = self.decoder.prediction(protein_encoder_out, molecule_encoder_out, batch["target_input"])
-        elif mode == 'inference_greedy':
+        if mode == 'inference_greedy':
             preds = self.decoder.inference_greedy(protein_encoder_out, molecule_encoder_out, batch["target_input"])
         elif mode == 'inference_beam_search':
             preds = self.decoder.inference_beam_search(protein_encoder_out, molecule_encoder_out, batch["target_input"],
@@ -500,6 +498,17 @@ class EncoderDecoder(nn.Module):
         return samples_list
 
     def run(self, samples, progress_bar=True, inference_type='inference_greedy', merging_character=','):
+        """
+        Run the model on the given protein sequences.
+
+        :param samples: A list of protein sequences to run the model on.
+        :param progress_bar: Whether to show the progress bar or not.
+        :param inference_type: The type of inference to use. It can be one of these: ['inference_greedy',
+        'inference_beam_search'].
+        :param merging_character: The character to use for merging the tokens at the end.
+        :return: The results of the model on the given samples in the form of a list consist of the protein sequence,
+        the task name, and the predicted sequence.
+        """
 
         data = self.prepare_sample(samples, task_name=self.task_token)
 
@@ -545,7 +554,7 @@ def prepare_models(name, device, compile_model=False):
 
     Args:
         name: The name of the prot2token task. It can be one of these: ['stability', 'fluorescence'].
-        device: The device to use.
+        device: The device to use for prediction.
         compile_model: Whether to compile the model or not.
 
     Returns:
