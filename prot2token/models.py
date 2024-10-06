@@ -509,7 +509,7 @@ class EncoderDecoder(nn.Module):
         :return: The results of the model on the given samples in the form of a list consist of the protein sequence,
         the task name, and the predicted sequence.
         """
-
+        torch.cuda.empty_cache()
         data = self.prepare_sample(samples, task_name=self.task_token)
 
         counter = 0
