@@ -98,7 +98,7 @@ def create_mask(tgt, pad_idx, device):
 
 
 class ProteinEncoder(nn.Module):
-    def __init__(self, configs, encoder_tokenizer, model_name='facebook/esm2_t33_650M_UR50D', out_dim=256):
+    def __init__(self, configs, model_name='facebook/esm2_t33_650M_UR50D', out_dim=256):
         super().__init__()
         self.out_dim = out_dim
         if configs.prot2token_model.protein_encoder.quantization_4_bit:
@@ -489,7 +489,7 @@ class EncoderDecoder(nn.Module):
                 encoded_molecule_sequence['input_ids'] = encoded_molecule_sequence['input_ids']
                 encoded_molecule_sequence['attention_mask'] = encoded_molecule_sequence['attention_mask']
             else:
-                encoded_molecule_sequence = torch.LongTensor(torch.zeros(1, 64, 320))
+                encoded_molecule_sequence = torch.zeros(1, 64, 320).long()
 
             encoded_target = torch.LongTensor(encoded_target).unsqueeze(0)
             samples_list.append(
@@ -579,7 +579,6 @@ def prepare_models(name, device, compile_model=False):
         model_name=configs.prot2token_model.protein_encoder.model_name,
         out_dim=configs.prot2token_model.decoder.dimension,
         configs=configs,
-        encoder_tokenizer=encoder_tokenizer
     )
 
     # freeze all parameters
