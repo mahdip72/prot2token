@@ -6,7 +6,7 @@ from transformers import EsmModel
 from transformers import AutoTokenizer, AutoModel
 import torch.nn.functional as F
 from peft import LoraConfig, PeftConfig, get_peft_model, prepare_model_for_kbit_training
-from utils import prepare_config_and_checkpoint, load_checkpoints_inference
+from .utils import prepare_config_and_checkpoint, load_checkpoints_inference
 from tqdm import tqdm
 
 
