@@ -527,10 +527,36 @@ class EncoderDecoder(nn.Module):
                 preds = self(batch, mode=inference_type, inference_config=self.inference_config)
                 preds = preds.detach().cpu().numpy().tolist()[0]
                 preds = [self.decoder_tokenizer.index_token_dict[pred] for pred in preds[2:-1]]
-                results.append([sequence[0], task_name, merging_character.join(preds)])
+                preds = self.postprocessing(preds, merging_character)
+                results.append([sequence[0], task_name, preds])
             counter += 1
 
         return results
+
+    def postprocessing(self, preds, merging_character):
+        if self.task_token == "<task_fluorescence>":
+            # Convert the predicted tokens to the fluorescence value
+            preds = self.denormalize_labels(
+                float("".join(preds)),
+                original_min=1.283, original_max=4.123, new_min=0.0001, new_max=0.9999
+            )
+            preds = list(str(preds))
+        elif self.task_token == "<task_stability>":
+            # Convert the predicted tokens to the stability value
+            preds = self.denormalize_labels(
+                float("".join(preds)),
+                original_min=-1.97, original_max=3.4, new_min=0.0001, new_max=0.9999
+            )
+            preds = list(str(preds))
+        preds = merging_character.join(preds)
+        return preds
+
+    @staticmethod
+    def denormalize_labels(mapped_label, original_min=1.283, original_max=4.123, new_min=0.0001, new_max=0.9999):
+        # Linearly map the mapped label back to the original range
+        mapped_label = ((mapped_label - new_min) / (new_max - new_min)) * (original_max - original_min) + original_min
+        mapped_label = round(mapped_label, 4)
+        return mapped_label
 
 
 class InferenceTokenizer:
