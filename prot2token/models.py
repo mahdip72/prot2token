@@ -662,7 +662,7 @@ def prepare_models(name, device, compile_model=False):
     if compile_model:
         final_model = torch.compile(final_model)
 
-    return final_model, decoder_tokenizer, configs,
+    return final_model
 
 
 if __name__ == '__main__':
