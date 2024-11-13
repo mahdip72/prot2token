@@ -64,7 +64,7 @@ To use the Prot2Token package for making predictions, follow the example code sn
 ```python
 from prot2token.models import prepare_models
 
-net, decoder_tokenizer, inference_configs = prepare_models(name='fluorescence', device='cuda', compile_model=True)
+net = prepare_models(name='fluorescence', device='cuda', compile_model=True)
 
 samples = ["MVLSEGEWQLVLHVWAKVEADVAGHGQDILIRLFKSHPETLEKFDRVKHLKTEAEMKASEDLKKAGVTVLTALGAILKKKGHHEAELKPLAQSHATKHKIPIKYLEFISEAIIHVLHSRHPGNFGADAQGAMNKALELFRKDIAAKYKELGYQG"]
 
