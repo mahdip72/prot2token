@@ -44,7 +44,42 @@ only protein sequences. </p>
 - [x] Add datasets
 - [x] Continue training of a pre-trained model on new tasks with new vocab sizes
 
-## Setup
+# Usage
+
+To use Prot2Token, you can either install the package directly for quick prediction usage or set up the full repository
+for development.
+
+# Package
+## Installation
+
+To install the package, you can run the following command:
+
+```commandline
+pip install prot2token
+```
+
+## Prediction Tutorial
+To use the Prot2Token package for making predictions, follow the example code snippet below:
+
+```python
+from prot2token.models import prepare_models
+
+net, decoder_tokenizer, inference_configs = prepare_models(name='fluorescence', device='cuda', compile_model=True)
+
+samples = ["MVLSEGEWQLVLHVWAKVEADVAGHGQDILIRLFKSHPETLEKFDRVKHLKTEAEMKASEDLKKAGVTVLTALGAILKKKGHHEAELKPLAQSHATKHKIPIKYLEFISEAIIHVLHSRHPGNFGADAQGAMNKALELFRKDIAAKYKELGYQG"]
+
+results = net.run(samples, merging_character='')
+print(results)
+
+```
+
+And the results will be like the following:
+
+```commandline
+[['MVLSEGEWQLVLHVWAKVEADVAGHGQDILIRLFKSHPETLEKFDRVKHLKTEAEMKASEDLKKAGVTVLTALGAILKKKGHHEAELKPLAQSHATKHKIPIKYLEFISEAIIHVLHSRHPGNFGADAQGAMNKALELFRKDIAAKYKELGYQG', '<task_fluorescence>', '0.1822']]
+```
+# Development
+## Installation
 
 Clone the repository and navigate into the directory:
 
@@ -52,8 +87,6 @@ Clone the repository and navigate into the directory:
 git clone git@github.com:mahdip72/prot2token.git
 cd prot2token
 ```
-
-## Installation
 
 To use this project, do as the following to install the dependencies.
 
