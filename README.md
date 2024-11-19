@@ -18,6 +18,8 @@
 
 This is the official repository of Prot2Token paper.
 
+![Alt text](src/demo.gif)
+
 <p align="center" style="text-align:justify">
 <strong>Abstract</strong>: This paper proposes a versatile tokenization method and introduces Prot2Token, a model that combines
 autoregressive language modeling with protein language models (PLMs) to tackle various protein prediction tasks using
@@ -31,9 +33,7 @@ protein language processing (PLP). Additionally, we use Prot2Token to develop S-
 the ESM model, which achieves competitive performance with state-of-the-art methods in 3D structure-related tasks using
 only protein sequences. </p>
 
-<p align="center"><img src="./figures/1.svg" alt=""></p>
-
-[![Watch the video](https://img.youtube.com/vi/YxYzR6zoxSM/maxresdefault.jpg)](https://youtu.be/YxYzR6zoxSM)
+<p align="center"><img src="./src/1.svg" alt=""></p>
 
 # To Do
 
@@ -221,7 +221,7 @@ When using this repository, please keep the following points in mind:
 You can find the detailed information about the model and the results in the paper.
 Here is an overview of the model architecture:
 
-<p align="center"><img src="./figures/3.svg" alt=""></p>
+<p align="center"><img src="./src/3.svg" alt=""></p>
 
 ## 📜 Citation
 
