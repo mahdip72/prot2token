@@ -235,4 +235,12 @@ If you use this code or the pretrained models, please cite the following paper:
 	doi = {10.1101/2024.05.31.596915},
 	journal = {bioRxiv}
 }
+
+@article {Pourmirzaei2025.03.03.641065,
+	author = {Pourmirzaei, Mahdi and Han, Ye and Esmaili, Farzaneh and Pourmirzaei, Mohammadreza and Alqarghuli, Salhuldin and Chen, Kai and Xu, Dong},
+	title = {Extending Prot2Token: Aligning Protein Language Models for Unified and Diverse Protein Prediction Tasks},
+	year = {2025},
+	doi = {10.1101/2025.03.03.641065},
+	journal = {bioRxiv}
+}
 ```
