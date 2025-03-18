@@ -241,10 +241,11 @@ class Decoder(nn.Module):
                 torch.randn(1, self.configs.prot2token_model.protein_encoder.max_len, dim) * .02)
             self.protein_encoder_pos_drop = nn.Dropout(p=0.05)
 
-        if self.configs.prot2token_model.molecule_encoder.drop_positional_encoding and self.positional_encoding_type == 'learned' and self.configs.prot2token_model.molecule_encoder.enable:
-            self.molecule_encoder_pos_embed = nn.Parameter(
-                torch.randn(1, self.configs.prot2token_model.molecule_encoder.max_len, dim) * .02)
-            self.molecule_encoder_pos_drop = nn.Dropout(p=0.05)
+        if hasattr(self.configs.prot2token_model, 'molecule_encoder'):
+            if self.configs.prot2token_model.molecule_encoder.drop_positional_encoding and self.positional_encoding_type == 'learned' and self.configs.prot2token_model.molecule_encoder.enable:
+                self.molecule_encoder_pos_embed = nn.Parameter(
+                    torch.randn(1, self.configs.prot2token_model.molecule_encoder.max_len, dim) * .02)
+                self.molecule_encoder_pos_drop = nn.Dropout(p=0.05)
 
         self.max_len = max_len
         self.pad_idx = pad_idx
@@ -264,9 +265,10 @@ class Decoder(nn.Module):
 
         if self.configs.prot2token_model.protein_encoder.drop_positional_encoding and self.positional_encoding_type == 'learned':
             trunc_normal_(self.protein_encoder_pos_embed, std=.02)
-        if self.configs.prot2token_model.molecule_encoder.enable:
-            if self.configs.prot2token_model.molecule_encoder.drop_positional_encoding and self.positional_encoding_type == 'learned':
-                trunc_normal_(self.molecule_encoder_pos_embed, std=.02)
+        if hasattr(self.configs.prot2token_model, 'molecule_encoder'):
+            if self.configs.prot2token_model.molecule_encoder.enable:
+                if self.configs.prot2token_model.molecule_encoder.drop_positional_encoding and self.positional_encoding_type == 'learned':
+                    trunc_normal_(self.molecule_encoder_pos_embed, std=.02)
         if self.positional_encoding_type == 'learned':
             trunc_normal_(self.decoder_pos_embed, std=.02)
 
@@ -297,15 +299,17 @@ class Decoder(nn.Module):
         # Drop positional encoding
         tgt_embedding = self.drop_positional_encoding(tgt_embedding, 'decoder')
         protein_encoder_out = self.drop_positional_encoding(protein_encoder_out, 'protein')
-        if self.configs.prot2token_model.molecule_encoder.enable:
-            molecule_encoder_out = self.drop_positional_encoding(molecule_encoder_out, 'molecule')
+        if hasattr(self.configs.prot2token_model, 'molecule_encoder'):
+            if self.configs.prot2token_model.molecule_encoder.enable:
+                molecule_encoder_out = self.drop_positional_encoding(molecule_encoder_out, 'molecule')
 
         protein_encoder_out = protein_encoder_out.transpose(0, 1)
         molecule_encoder_out = molecule_encoder_out.transpose(0, 1)
 
-        if self.configs.prot2token_model.molecule_encoder.enable:
-            # Concatenate the protein and molecule representations
-            encoders_out = torch.cat([protein_encoder_out, molecule_encoder_out], dim=0)
+        if hasattr(self.configs.prot2token_model, 'molecule_encoder'):
+            if self.configs.prot2token_model.molecule_encoder.enable:
+                # Concatenate the protein and molecule representations
+                encoders_out = torch.cat([protein_encoder_out, molecule_encoder_out], dim=0)
         else:
             encoders_out = protein_encoder_out
 
@@ -427,16 +431,25 @@ class EncoderDecoder(nn.Module):
         self.task_token = task_token
 
         self.max_protein_encoder_length = configs.prot2token_model.protein_encoder.max_len
-        self.max_molecule_encoder_length = configs.prot2token_model.molecule_encoder.max_len
+        if hasattr(configs.prot2token_model, 'molecule_encoder'):
+            self.max_molecule_encoder_length = configs.prot2token_model.molecule_encoder.max_len
+        else:
+            self.max_molecule_encoder_length = 32
         self.max_decoder_length = configs.prot2token_model.decoder.max_len
 
-        self.dummy_representation = torch.zeros(1, self.configs.prot2token_model.molecule_encoder.max_len,
+        if hasattr(configs.prot2token_model, 'molecule_encoder'):
+            self.max_molecule_encoder_length = configs.prot2token_model.molecule_encoder.max_len
+        else:
+            self.max_molecule_encoder_length = 32
+
+        self.dummy_representation = torch.zeros(1, self.max_molecule_encoder_length,
                                                 self.decoder.dim)
 
     def forward(self, batch, mode=False, **kwargs):
         protein_encoder_out = self.protein_encoder(batch)
-        if self.configs.prot2token_model.molecule_encoder.enable:
-            molecule_encoder_out = self.molecule_encoder(batch)
+        if hasattr(self.configs.prot2token_model, 'molecule_encoder'):
+            if self.configs.prot2token_model.molecule_encoder.enable:
+                molecule_encoder_out = self.molecule_encoder(batch)
         else:
             molecule_encoder_out = self.dummy_representation
 
@@ -587,6 +600,16 @@ def prepare_models(name, device, compile_model=False):
         The prot2token model.
     """
 
+    task_token_dict = {'stability': '<task_stability>',
+                       'fluorescence': '<task_fluorescence>',
+                       'kinase_group': '<task_kinase_group>',
+                       'kinase_interaction': '<task_kinase_interaction>',
+                       'kinase_phosphorylation_site': '<task_kinase_phosphorylation_site>'}
+
+    # Show error if the task name is not valid
+    if name not in task_token_dict:
+        raise ValueError(f"Invalid task name: {name}")
+
     encoder_tokenizer = AutoTokenizer.from_pretrained("facebook/esm2_t33_650M_UR50D")
 
     molecule_encoder_tokenizer = AutoTokenizer.from_pretrained("gayane/BARTSmiles",
@@ -611,12 +634,13 @@ def prepare_models(name, device, compile_model=False):
     for param in protein_encoder.parameters():
         param.requires_grad = False
 
-    if configs.prot2token_model.molecule_encoder.enable:
-        # Prepare the molecule encoder.
-        molecule_encoder = MoleculeEncoder(model_name=configs.prot2token_model.molecule_encoder.model_name,
-                                           out_dim=configs.prot2token_model.decoder.dimension,
-                                           configs=configs,
-                                           )
+    if hasattr(configs.prot2token_model, 'molecule_encoder'):
+        if configs.prot2token_model.molecule_encoder.enable:
+            # Prepare the molecule encoder.
+            molecule_encoder = MoleculeEncoder(model_name=configs.prot2token_model.molecule_encoder.model_name,
+                                               out_dim=configs.prot2token_model.decoder.dimension,
+                                               configs=configs,
+                                               )
         # freeze all parameters
         for param in molecule_encoder.parameters():
             param.requires_grad = False
@@ -640,8 +664,6 @@ def prepare_models(name, device, compile_model=False):
     for param in decoder.parameters():
         param.requires_grad = False
 
-    task_token_dict = {'stability': '<task_stability>',
-                       'fluorescence': '<task_fluorescence>'}
     # Prepare the encoder-decoder model.
     final_model = EncoderDecoder(protein_encoder, molecule_encoder, decoder,
                                  encoder_tokenizer,

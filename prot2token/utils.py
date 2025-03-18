@@ -43,6 +43,19 @@ def prepare_config_and_checkpoint(name):
             repo_id="Mahdip72/prot2token",
             filename="fluorescence/2024-04-23__18-20-05/config.yaml"
         )
+    elif name == 'kinase_group':
+        checkpoint_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="kinase_group/2025-02-03__23-14-25/checkpoints/best_valid_kinase_group_macro_f1.pth"
+        )
+        decoder_tokenizer_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="kinase_group/2025-02-03__23-14-25/decoder_tokenizer.yaml"
+        )
+        config_file_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="kinase_group/2025-02-03__23-14-25/config.yaml"
+        )
 
     else:
         raise ValueError(f"Model with name '{name}' is not supported.")
@@ -78,7 +91,7 @@ def add_prefix_to_keys(dictionary, prefix):
     return new_dict
 
 
-def load_configs(config, inference=False):
+def load_configs(config, inference=True):
     """
         Load the configuration file and convert the necessary values to floats.
 
@@ -92,13 +105,6 @@ def load_configs(config, inference=False):
 
     # Convert the dictionary to a Box object for easier access to the values.
     tree_config = Box(config)
-
-    if not inference:
-        # Convert the necessary values to floats.
-        tree_config.optimizer.lr = float(tree_config.optimizer.lr)
-        tree_config.optimizer.decay.min_lr = float(tree_config.optimizer.decay.min_lr)
-        tree_config.optimizer.weight_decay = float(tree_config.optimizer.weight_decay)
-        tree_config.optimizer.eps = float(tree_config.optimizer.eps)
     return tree_config
 
 
