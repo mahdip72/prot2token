@@ -517,7 +517,7 @@ class EncoderDecoder(nn.Module):
 
             encoded_target = torch.LongTensor(encoded_target).unsqueeze(0)
             samples_list.append(
-                (encoded_protein_sequence, encoded_target, encoded_molecule_sequence, sequence, task_name))
+                (encoded_protein_sequence, encoded_target, encoded_molecule_sequence, sequence, task_name, prompt))
 
         return samples_list
 
@@ -541,7 +541,7 @@ class EncoderDecoder(nn.Module):
         self.eval()
         for i, sample in enumerate(tqdm(data, desc=f'inference', total=len(samples),
                                         leave=False, disable=not progress_bar)):
-            protein_sequence, target, molecule_sequence, sequence, task_name = sample
+            protein_sequence, target, molecule_sequence, sequence, task_name, prompt = sample
 
             batch = {"protein_sequence": protein_sequence.to(self.device),
                      "molecule_sequence": molecule_sequence.to(self.device),
@@ -551,13 +551,13 @@ class EncoderDecoder(nn.Module):
                 preds = self(batch, mode=inference_type, inference_config=self.inference_config)
                 preds = preds.detach().cpu().numpy().tolist()[0]
                 preds = [self.decoder_tokenizer.index_token_dict[pred] for pred in preds[2:-1]]
-                preds = self.postprocessing(preds, merging_character)
+                preds = self.postprocessing(preds, merging_character, prompt)
                 results.append([sequence[0], task_name, preds])
             counter += 1
 
         return results
 
-    def postprocessing(self, preds, merging_character):
+    def postprocessing(self, preds, merging_character, prompt):
         if self.task_token == "<task_fluorescence>":
             # Convert the predicted tokens to the fluorescence value
             preds = self.denormalize_labels(
@@ -575,6 +575,7 @@ class EncoderDecoder(nn.Module):
         elif self.task_token == "<task_kinase_phosphorylation_site>":
             # pick predes after the <sep> token
             preds = preds[preds.index('<sep>') + 1:]
+            preds = [pred for pred in preds if pred in prompt]
 
         preds = merging_character.join(preds)
         return preds
