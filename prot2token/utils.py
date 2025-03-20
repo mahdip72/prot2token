@@ -56,6 +56,19 @@ def prepare_config_and_checkpoint(name):
             repo_id="Mahdip72/prot2token",
             filename="kinase_group/2025-02-03__23-14-25/config.yaml"
         )
+    elif name == 'kinase_phosphorylation_site':
+        checkpoint_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="kinase_phosphorylation_site/2025-01-21__22-15-51/checkpoints/best_valid_kinase_phosphorylation_site_f1.pth"
+        )
+        decoder_tokenizer_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="kinase_phosphorylation_site/2025-01-21__22-15-51/decoder_tokenizer.yaml"
+        )
+        config_file_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="kinase_phosphorylation_site/2025-01-21__22-15-51/config.yaml"
+        )
 
     else:
         raise ValueError(f"Model with name '{name}' is not supported.")
@@ -137,22 +150,6 @@ def load_checkpoints_inference(checkpoint_path, net):
     print(f'Loading checkpoint log: {load_log}')
 
     return net
-
-
-
-class InferenceTokenizer:
-    def __init__(self, token_dict):
-        self.tokens_dict = token_dict
-        self.index_token_dict = self.update_index_token_dict()
-        self.vocab_size = len(self.tokens_dict)
-
-    def update_index_token_dict(self):
-        return {value: key for key, value in self.tokens_dict.items()}
-
-    def __call__(self,
-                 task_name: int):
-        encoded_target = [self.tokens_dict['<bos>'], self.tokens_dict[task_name]]
-        return encoded_target
 
 
 if __name__ == '__main__':

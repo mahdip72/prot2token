@@ -350,7 +350,7 @@ class Decoder(nn.Module):
 
     def inference_greedy(self, protein_encoder_out, molecule_encoder_out, tgt):
         # Initialize the generated sequence with the initial token
-        generated_tokens = tgt[..., :2]
+        generated_tokens = tgt
 
         # Loop over the range of maximum sequence length
         for _ in range(self.max_len - 2):
@@ -465,11 +465,22 @@ class EncoderDecoder(nn.Module):
 
         return preds
 
+    @staticmethod
+    def preprocessing(sequence, task_name, prompt):
+        if len(sequence) == 2 and task_name == '<task_kinase_phosphorylation_site>':
+            # find the indices of all S, T and Y amino acids in the first sequence
+            prompt = [str(i + 1) for i, aa in enumerate(sequence[0]) if aa in ['S', 'T', 'Y']]
+            prompt += ['<sep>']
+        return sequence, prompt
+
     def prepare_sample(self, sequences, task_name):
         samples_list = []
+        prompt = False
         for sequence in sequences:
+            sequence, prompt = self.preprocessing(sequence, task_name, prompt)
+
             sequence = [sequence]
-            encoded_target = self.decoder_tokenizer(task_name=task_name)
+            encoded_target = self.decoder_tokenizer(task_name=task_name, prompt=prompt)
 
             if len(sequence) == 3:
                 smiles_sequence = sequence[2]
@@ -561,6 +572,10 @@ class EncoderDecoder(nn.Module):
                 original_min=-1.97, original_max=3.4, new_min=0.0001, new_max=0.9999
             )
             preds = list(str(preds))
+        elif self.task_token == "<task_kinase_phosphorylation_site>":
+            # pick predes after the <sep> token
+            preds = preds[preds.index('<sep>') + 1:]
+
         preds = merging_character.join(preds)
         return preds
 
@@ -582,8 +597,11 @@ class InferenceTokenizer:
         return {value: key for key, value in self.tokens_dict.items()}
 
     def __call__(self,
-                 task_name: int):
+                 task_name: int,
+                 prompt: str = False):
         encoded_target = [self.tokens_dict['<bos>'], self.tokens_dict[task_name]]
+        if prompt:
+            encoded_target += [self.tokens_dict[i] for i in prompt]
         return encoded_target
 
 
