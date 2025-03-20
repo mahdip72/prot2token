@@ -367,7 +367,7 @@ class Decoder(nn.Module):
             if next_token_id.item() == self.decoder_tokenizer.tokens_dict['<eos>']:
                 break
 
-        return generated_tokens
+        return generated_tokens, predicted_sequence
 
     def inference_beam_search(self, protein_encoder_out, molecule_encoder_out, tgt, beam_width=1, temperature=1.0,
                               top_k=1):
@@ -454,7 +454,7 @@ class EncoderDecoder(nn.Module):
             molecule_encoder_out = self.dummy_representation
 
         if mode == 'inference_greedy':
-            preds = self.decoder.inference_greedy(protein_encoder_out, molecule_encoder_out, batch["target_input"])
+            preds, confidence = self.decoder.inference_greedy(protein_encoder_out, molecule_encoder_out, batch["target_input"])
         elif mode == 'inference_beam_search':
             preds = self.decoder.inference_beam_search(protein_encoder_out, molecule_encoder_out, batch["target_input"],
                                                        kwargs['inference_config']["beam_width"],
@@ -463,6 +463,8 @@ class EncoderDecoder(nn.Module):
         else:
             preds = self.decoder(protein_encoder_out, molecule_encoder_out, batch["target_input"])
 
+        if kwargs['return_confidence']:
+            return preds, confidence
         return preds
 
     @staticmethod
@@ -521,7 +523,7 @@ class EncoderDecoder(nn.Module):
 
         return samples_list
 
-    def run(self, samples, progress_bar=True, inference_type='inference_greedy', merging_character=','):
+    def run(self, samples, progress_bar=True, inference_type='inference_greedy', merging_character=',', return_confidence=False):
         """
         Run the model on the given protein sequences.
 
@@ -548,16 +550,21 @@ class EncoderDecoder(nn.Module):
                      "target_input": target.to(self.device)}
 
             with torch.inference_mode():
-                preds = self(batch, mode=inference_type, inference_config=self.inference_config)
+                preds, confidence = self(batch, mode=inference_type, inference_config=self.inference_config, return_confidence=return_confidence)
                 preds = preds.detach().cpu().numpy().tolist()[0]
                 preds = [self.decoder_tokenizer.index_token_dict[pred] for pred in preds[2:-1]]
-                preds = self.postprocessing(preds, merging_character, prompt)
+                confidence = confidence.detach().cpu()[0, 1:-1, :]
+                preds, confidence = self.postprocessing(preds, merging_character, prompt, confidence=confidence, return_confidence=return_confidence)
                 results.append([sequence[0], task_name, preds])
+                if return_confidence:
+                    results[-1].append(confidence)
             counter += 1
 
         return results
 
-    def postprocessing(self, preds, merging_character, prompt):
+    def postprocessing(self, preds, merging_character, prompt, **kwargs):
+        confidence = kwargs['confidence']
+
         if self.task_token == "<task_fluorescence>":
             # Convert the predicted tokens to the fluorescence value
             preds = self.denormalize_labels(
@@ -573,12 +580,14 @@ class EncoderDecoder(nn.Module):
             )
             preds = list(str(preds))
         elif self.task_token == "<task_kinase_phosphorylation_site>":
-            # pick predes after the <sep> token
+            if kwargs['return_confidence']:
+                confidence = confidence[preds.index('<sep>')+1:, ...]
+            # pick preds after the <sep> token
             preds = preds[preds.index('<sep>') + 1:]
             preds = [pred for pred in preds if pred in prompt]
 
         preds = merging_character.join(preds)
-        return preds
+        return preds, confidence
 
     @staticmethod
     def denormalize_labels(mapped_label, original_min=1.283, original_max=4.123, new_min=0.0001, new_max=0.9999):
