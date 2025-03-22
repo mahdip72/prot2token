@@ -35,6 +35,13 @@ only protein sequences. </p>
 
 <p align="center"><img src="./src/1.svg" alt=""></p>
 
+# News
+- **22/03/2025**: Add two new tasks to python package: **kinase-group classification** and **kinase phosphorylation site prediction**.
+- **22/03/2025**: The preprint version of our new work **Predicting Kinase-Substrate Phosphorylation Site Using Autoregressive Transformer** has been published. You can find the preprint version on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.12.642740v1).
+- **22/03/2025**: Our new paper **Using Autoregressive-Transformer Model for Protein-Ligand Binding Site Prediction** has been accepted in ICLR 2025 LMRL. You can find the paper on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.11.642700v1).
+- **22/03/2025**: Our new paper **Extending Prot2Token** has been accepted in ICLR 2025 LMRL. You can find the preprint version on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.03.641065v1).
+
+
 # To Do
 
 - [x] Add the code for the Prot2Token model
@@ -72,12 +79,23 @@ results = net.run(samples, merging_character='')
 print(results)
 
 ```
+for kinase phosphorylation site prediction task you need to have both substrate and kinase sequences as input:
 
-And the results will be like the following:
+```python
+from prot2token.models import prepare_models
+net = prepare_models(name='kinase_phosphorylation_site', device='cuda', compile_model=True)
 
-```commandline
-[['MVLSEGEWQLVLHVWAKVEADVAGHGQDILIRLFKSHPETLEKFDRVKHLKTEAEMKASEDLKKAGVTVLTALGAILKKKGHHEAELKPLAQSHATKHKIPIKYLEFISEAIIHVLHSRHPGNFGADAQGAMNKALELFRKDIAAKYKELGYQG', '<task_fluorescence>', '1.8003']]
+samples = [("MEVRPKESWNHADFVHCEDTESVPGKPSVNADEEVGGPQICRVCGDKATGYHFNVMTCEGCKGFFRRAMKRNARLRCPFRKGACEITRKTRRQCQACRLRKCLESGMKKEMIMSDEAVEERRALIKRKKSERTGTQPLGVQGLTEEQRMMIRELMDAQMKTFDTTFSHFKNFRLPGVLSSGCELPESLQAPSREEAAKWSQVRKDLCSLKVSLQLRGEDGSVWNYKPPADSGGKEIFSLLPHMADMSTYMFKGIISFAKVISYFRDLPIEDQISLLKGAAFELCQLRFNTVFNAETGTWECGRLSYCLEDTAGGFQQLLLEPMLKFHYMLKKLQLHEEEYVLMQAISLFSPDRPGVLQHRVVDQLQEQFAITLKSYIECNRPQPAHRFLFLKIMAMLTELRSINAQHTQRLLRIQDIHPFATPLMQELFGITGS",
+                'MENFQKVEKIGEGTYGVVYKARNKLTGEVVALKKIRLDTETEGVPSTAIREISLLKELNHPNIVKLLDVIHTENKLYLVFEFLHQDLKKFMDASALTGIPLPLIKSYLFQLLQGLAFCHSHRVLHRDLKPQNLLINTEGAIKLADFGLARAFGVPVRTYTHEVVTLWYRAPEILLGCKYYSTAVDIWSLGCIFAEMHLVGTQHHARCCGEHRRNGRQSLCPLCSYLEVAASQGWGMTAVSTPYPVTRRALFPGDSEIDQLFRIFRTLGTPDEVVWPGVTSMPDYKPSFPKWARQDFSKVVPPLDEDGRSLLSQMLHYDPNKRISAKAALAHPFFQDVTKPVPHLRL')]
+
+results = net.run(samples, merging_character=',')
+
 ```
+You can also get back the model confidence for metrics calculation. You need to set the `return_confidence` parameter:
+```python
+results = net.run(samples, merging_character=',', return_confidence=True)
+```
+
 # Development
 ## Installation
 
@@ -242,5 +260,23 @@ If you use this code or the pretrained models, please cite the following paper:
 	year = {2025},
 	doi = {10.1101/2025.03.03.641065},
 	journal = {bioRxiv}
+}
+
+@article{pourmirzaei2025using,
+  title={Using Autoregressive-Transformer Model for Protein-Ligand Binding Site Prediction},
+  author={Pourmirzaei, Mahdi and Alqarghuli, Salhuldin and Esmaili, Farzaneh and POURMIRZAEIOLIAEI, MOHAMMADREZA and Rezaei, Mohsen and Xu, Dong},
+  journal={bioRxiv},
+  pages={2025--03},
+  year={2025},
+  publisher={Cold Spring Harbor Laboratory}
+}
+
+@article{pourmirzaei2025predicting,
+  title={Predicting Kinase-Substrate Phosphorylation Site Using Autoregressive Transformer},
+  author={Pourmirzaei, Mahdi and Esmaili, Farzaneh and Pourmirzaei, Mohammadreza and Rezaei, Mohsen and Xu, Dong},
+  journal={bioRxiv},
+  pages={2025--03},
+  year={2025},
+  publisher={Cold Spring Harbor Laboratory}
 }
 ```
