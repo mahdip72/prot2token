@@ -30,7 +30,6 @@ site prediction. The code and model are available </p>
 
 \
 \
-This page is under the construction to be merged with the main Prot2Token package.
 
-More details will be available soon.
-
+Checkout the main repository [here](https://github.com/mahdip72/prot2token?tab=readme-ov-file#prediction-tutorial)
+to use python package for predicting kinase-substrate phosphorylation site.
