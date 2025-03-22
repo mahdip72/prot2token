@@ -28,8 +28,8 @@ site prediction. The code and model are available </p>
 
 <p align="center"><img src="../src/protein-kinase.svg" alt=""></p>
 
-\
-\
+
+
 
 Checkout the main repository [here](https://github.com/mahdip72/prot2token?tab=readme-ov-file#prediction-tutorial)
 to use python package for predicting kinase-substrate phosphorylation site.
