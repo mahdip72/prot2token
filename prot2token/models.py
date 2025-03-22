@@ -310,6 +310,8 @@ class Decoder(nn.Module):
             if self.configs.prot2token_model.molecule_encoder.enable:
                 # Concatenate the protein and molecule representations
                 encoders_out = torch.cat([protein_encoder_out, molecule_encoder_out], dim=0)
+            else:
+                encoders_out = protein_encoder_out
         else:
             encoders_out = protein_encoder_out
 
@@ -451,6 +453,8 @@ class EncoderDecoder(nn.Module):
         if hasattr(self.configs.prot2token_model, 'molecule_encoder'):
             if self.configs.prot2token_model.molecule_encoder.enable:
                 molecule_encoder_out = self.molecule_encoder(batch)
+            else:
+                molecule_encoder_out = self.dummy_representation
         else:
             molecule_encoder_out = self.dummy_representation
 
