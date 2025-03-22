@@ -411,7 +411,7 @@ class Decoder(nn.Module):
 
 class EncoderDecoder(nn.Module):
     def __init__(self, protein_encoder, molecule_encoder, decoder, encoder_tokenizer, molecule_encoder_tokenizer,
-                 decoder_tokenizer, device, task_token, configs):
+                 decoder_tokenizer, device, task_token, task_name, configs):
         super().__init__()
         self.protein_encoder = protein_encoder
         self.molecule_encoder = molecule_encoder
@@ -429,6 +429,7 @@ class EncoderDecoder(nn.Module):
         }
         self.device = device
         self.task_token = task_token
+        self.task_name = task_name
 
         self.max_protein_encoder_length = configs.prot2token_model.protein_encoder.max_len
         if hasattr(configs.prot2token_model, 'molecule_encoder'):
@@ -466,6 +467,23 @@ class EncoderDecoder(nn.Module):
         if kwargs['return_confidence']:
             return preds, confidence
         return preds
+
+    def check_input_sequences(self, samples):
+        # Check for kinase phosphorylation site and interaction tasks; `samples` is a list in which items must be a
+        # tuple of 2 str sequences
+        if self.task_token == "<task_kinase_phosphorylation_site>" or self.task_token == "<task_protein_protein_binding_site>":
+            for sample in samples:
+                if len(sample) != 2:
+                    raise ValueError(
+                        f'For the task {self.task_name}, the input samples must be a list of tuples of 2 sequences.')
+                if not isinstance(sample[0], str) or not isinstance(sample[1], str):
+                    raise ValueError(
+                        f'For the task {self.task_name}, the input samples must be a list of tuples of 2 sequences.')
+        else:
+            # For other tasks, `samples` is a list in which items must be a single str sequence
+            for sample in samples:
+                if not isinstance(sample, str):
+                    raise ValueError(f'For the task {self.task_name}, the input samples must be a list of sequences.')
 
     @staticmethod
     def preprocessing(sequence, task_name, prompt):
@@ -535,6 +553,8 @@ class EncoderDecoder(nn.Module):
         :return: The results of the model on the given samples in the form of a list consist of the protein sequence,
         the task name, and the predicted sequence.
         """
+        self.check_input_sequences(samples)
+
         torch.cuda.empty_cache()
         data = self.prepare_sample(samples, task_name=self.task_token)
 
@@ -620,7 +640,8 @@ def prepare_models(name, device, compile_model=False):
     Prepare the encoder, decoder, and the encoder-decoder model.
 
     Args:
-        name: The name of the prot2token task. It can be one of these: ['stability', 'fluorescence'].
+        name: The name of the prot2token task. It can be one of these: ['stability', 'fluorescence', 'kinase_group',
+        'kinase_interaction', 'kinase_phosphorylation_site'].
         device: The device to use for prediction.
         compile_model: Whether to compile the model or not.
 
@@ -669,10 +690,11 @@ def prepare_models(name, device, compile_model=False):
                                                out_dim=configs.prot2token_model.decoder.dimension,
                                                configs=configs,
                                                )
-        # freeze all parameters
-        for param in molecule_encoder.parameters():
-            param.requires_grad = False
-
+            # freeze all parameters
+            for param in molecule_encoder.parameters():
+                param.requires_grad = False
+        else:
+            molecule_encoder = None
     else:
         molecule_encoder = None
 
@@ -699,6 +721,7 @@ def prepare_models(name, device, compile_model=False):
                                  decoder_tokenizer,
                                  device,
                                  task_token=task_token_dict[name],
+                                 task_name=name,
                                  configs=configs)
 
     # freeze all parameters
