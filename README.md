@@ -263,20 +263,20 @@ If you use this code or the pretrained models, please cite the following paper:
 }
 
 @article{pourmirzaei2025using,
-  title={Using Autoregressive-Transformer Model for Protein-Ligand Binding Site Prediction},
-  author={Pourmirzaei, Mahdi and Alqarghuli, Salhuldin and Esmaili, Farzaneh and POURMIRZAEIOLIAEI, MOHAMMADREZA and Rezaei, Mohsen and Xu, Dong},
-  journal={bioRxiv},
-  pages={2025--03},
-  year={2025},
-  publisher={Cold Spring Harbor Laboratory}
+    title={Using Autoregressive-Transformer Model for Protein-Ligand Binding Site Prediction},
+    author={Pourmirzaei, Mahdi and Alqarghuli, Salhuldin and Esmaili, Farzaneh and POURMIRZAEIOLIAEI, MOHAMMADREZA and Rezaei, Mohsen and Xu, Dong},
+    journal={bioRxiv},
+    pages={2025--03},
+    year={2025},
+    publisher={Cold Spring Harbor Laboratory}
 }
 
 @article{pourmirzaei2025predicting,
-  title={Predicting Kinase-Substrate Phosphorylation Site Using Autoregressive Transformer},
-  author={Pourmirzaei, Mahdi and Esmaili, Farzaneh and Pourmirzaei, Mohammadreza and Rezaei, Mohsen and Xu, Dong},
-  journal={bioRxiv},
-  pages={2025--03},
-  year={2025},
-  publisher={Cold Spring Harbor Laboratory}
+    title={Predicting Kinase-Substrate Phosphorylation Site Using Autoregressive Transformer},
+    author={Pourmirzaei, Mahdi and Esmaili, Farzaneh and Pourmirzaei, Mohammadreza and Rezaei, Mohsen and Xu, Dong},
+    journal={bioRxiv},
+    pages={2025--03},
+    year={2025},
+    publisher={Cold Spring Harbor Laboratory}
 }
 ```
