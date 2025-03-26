@@ -353,6 +353,7 @@ class Decoder(nn.Module):
     def inference_greedy(self, protein_encoder_out, molecule_encoder_out, tgt):
         # Initialize the generated sequence with the initial token
         generated_tokens = tgt
+        predicted_sequence = False
 
         # Loop over the range of maximum sequence length
         for _ in range(self.max_len - 2):
@@ -449,6 +450,7 @@ class EncoderDecoder(nn.Module):
                                                 self.decoder.dim)
 
     def forward(self, batch, mode=False, **kwargs):
+        confidence = False
         protein_encoder_out = self.protein_encoder(batch)
         if hasattr(self.configs.prot2token_model, 'molecule_encoder'):
             if self.configs.prot2token_model.molecule_encoder.enable:
@@ -468,9 +470,7 @@ class EncoderDecoder(nn.Module):
         else:
             preds = self.decoder(protein_encoder_out, molecule_encoder_out, batch["target_input"])
 
-        if kwargs['return_confidence']:
-            return preds, confidence
-        return preds
+        return preds, confidence
 
     def check_input_sequences(self, samples):
         # Check for kinase phosphorylation site and interaction tasks; `samples` is a list in which items must be a
@@ -574,7 +574,7 @@ class EncoderDecoder(nn.Module):
                      "target_input": target.to(self.device)}
 
             with torch.inference_mode():
-                preds, confidence = self(batch, mode=inference_type, inference_config=self.inference_config, return_confidence=return_confidence)
+                preds, confidence = self(batch, mode=inference_type, inference_config=self.inference_config)
                 preds = preds.detach().cpu().numpy().tolist()[0]
                 preds = [self.decoder_tokenizer.index_token_dict[pred] for pred in preds[2:-1]]
                 confidence = confidence.detach().cpu()[0, 1:-1, :]
