@@ -51,8 +51,11 @@ only protein sequences. </p>
 - [x] Add datasets
 - [x] Continue training of a pre-trained model on new tasks with new vocab sizes
 
-# Usage
+# license
+The Prot2Token repository and the pre-trained models are provided ONLY for research purposes and are not intended for commercial use. 
+If you are interested in using these models and technology commercially, please contact the University of Missouri Technology Transfer Office (techadvancement@missouri.edu) for licensing inquiries.
 
+# Usage
 To use Prot2Token, you can either install the package directly for quick prediction usage or set up the full repository
 for development.
 
