@@ -1,19 +1,10 @@
 <div align="center">
-<h2>Prot2Token: A multi-task framework for protein language processing using autoregressive language modeling</h2>
-
-**Mahdi Pourmirzaei**<sup>1&dagger;</sup> · **Farzaneh Esmaili**<sup>1 </sup> · **Mohammadreza Pourmirzaei**<sup>
-2 </sup> · **Duolin Wang** <sup>1</sup> · **Dong Xu**<sup>1*</sup>
-
-<sup>1</sup>University of Missouri&emsp;&emsp;&emsp;&emsp;<sup>2</sup>Politecnico di Milano
-
-&dagger;project lead&emsp;*corresponding author
-
-**ICML 2024**
+<h2>Prot2Token: A Unified Framework for Protein Modeling via Next-Token Prediction</h2>
 
 <p align="center">
     <img src="https://i.imgur.com/waxVImv.png" alt="Oryx Video-ChatGPT">
 </p>
-<a href="https://www.biorxiv.org/content/10.1101/2024.05.31.596915v1"><img src='https://img.shields.io/badge/bioRxiv-Prot2Token-<COLOR>.svg' alt='Paper PDF'></a>
+<a href="https://arxiv.org/abs/2505.20589"><img src='https://img.shields.io/badge/arxiv-Prot2Token-red.svg' alt='Paper PDF'></a>
 </div>
 
 This is the official repository of Prot2Token paper.
@@ -21,26 +12,41 @@ This is the official repository of Prot2Token paper.
 ![Alt text](src/demo.gif)
 
 <p align="center" style="text-align:justify">
-<strong>Abstract</strong>: This paper proposes a versatile tokenization method and introduces Prot2Token, a model that combines
-autoregressive language modeling with protein language models (PLMs) to tackle various protein prediction tasks using
-protein sequences. Leveraging our tokenization method, Prot2Token adapts existing PLMs for multiple tasks such as
-protein-level prediction, residue-level prediction, and protein-protein interaction prediction through next-token
-prediction of tokenized target label sequences. By incorporating prompt tokens into the decoder, Prot2Token enables
-multi-task training in a single end-to-end session. Our results demonstrate that Prot2Token not only matches
-the performance of specialized models across various tasks but also paves the way for integrating protein tasks
-with large language models (LLMs), representing an important step towards creating general-purpose PLMs for advanced
-protein language processing (PLP). Additionally, we use Prot2Token to develop S-ESM, a structure-aware version of
-the ESM model, which achieves competitive performance with state-of-the-art methods in 3D structure-related tasks using
-only protein sequences. </p>
+<strong>Abstract</strong>: The diverse nature of protein prediction tasks has traditionally necessitated specialized 
+models, hindering the development of broadly applicable and computationally efficient Protein Language Models (PLMs). 
+In this work, we introduce Prot2Token, a unified framework that overcomes these challenges by converting a wide
+spectrum of protein-related predictions, from sequence-level properties and residue-specific attributes to complex 
+inter-protein interactions, into a standardized next-token prediction format. At its core, Prot2Token employs an 
+autoregressive decoder, conditioned on embeddings from pre-trained protein encoders and guided by learnable task 
+tokens, to perform diverse predictions. This architecture uniquely facilitates multi-task learning, enabling a
+single model to master numerous tasks with improved efficiency. We present extensive experimental validation 
+across a variety of benchmarks, demonstrating Prot2Tokens strong predictive power in different types of 
+protein-prediction tasks. Key results include significant speedups (e.g., near 1000x over AlphaFold2 with MSA) 
+and performance often matching or exceeding specialized approaches. Beyond that, we introduce an auxiliary 
+self-supervised decoder pre-training approach to improve spatially sensitive task performance. Prot2Token thus offers
+a significant step towards a versatile, high-throughput paradigm for protein modeling, promising to accelerate 
+biological discovery and the development of novel therapeutics. </p>
 
 <p align="center"><img src="./src/1.svg" alt=""></p>
 
 # News
-- **22/03/2025**: Add two new tasks to python package: **kinase-group classification** and **kinase phosphorylation site prediction**.
-- **22/03/2025**: The preprint version of our new work **Predicting Kinase-Substrate Phosphorylation Site Using Autoregressive Transformer** has been published. You can find the preprint version on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.12.642740v1).
-- **22/03/2025**: Our new paper **Using Autoregressive-Transformer Model for Protein-Ligand Binding Site Prediction** has been accepted in ICLR 2025 LMRL. You can find the paper on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.11.642700v1).
-- **22/03/2025**: Our new paper **Extending Prot2Token** has been accepted in ICLR 2025 LMRL. You can find the preprint version on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.03.641065v1).
 
+- *17/06/2024**: The preprint version of our work **Prot2Token: A multi-task framework for protein language processing
+  using autoregressive language modeling** has been published in ICML AccMLBio. You can find the preprint version
+  on [bioRxiv](https://www.biorxiv.org/content/10.1101/2024.05.31.596915v1).
+- **13/11/2024**: prot2token package has been released on PyPI. You can install it by running `pip install prot2token`.
+- **22/03/2025**: Add two new tasks to python package: **kinase-group classification** and **kinase phosphorylation site
+  prediction**.
+- **22/03/2025**: The preprint version of our new work **Predicting Kinase-Substrate Phosphorylation Site Using
+  Autoregressive Transformer** has been published. You can find the preprint version
+  on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.12.642740v1).
+- **22/03/2025**: Our new paper **Using Autoregressive-Transformer Model for Protein-Ligand Binding Site Prediction**
+  has been accepted in ICLR 2025 LMRL. You can find the paper
+  on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.11.642700v1).
+- **22/03/2025**: Our new paper **Extending Prot2Token** has been accepted in ICLR 2025 LMRL. You can find the preprint
+  version on [bioRxiv](https://www.biorxiv.org/content/10.1101/2025.03.03.641065v1).
+- **29/05/2025**: A new preprint version of our work Prot2Token has been published
+  on [arxiv](https://arxiv.org/abs/2505.20589).
 
 # To Do
 
@@ -50,16 +56,24 @@ only protein sequences. </p>
 - [x] Add the pre-trained models to use them for prediction
 - [x] Add datasets
 - [x] Continue training of a pre-trained model on new tasks with new vocab sizes
+- [ ] Add melting temperature prediction task to the package
+- [ ] Add mutation stability prediction task to the package
+- [ ] Updated version of substrate-kinase phosphorylation site prediction model
 
 # license
-The Prot2Token repository and the pre-trained models are provided ONLY for research purposes and are not intended for commercial use. 
-If you are interested in using these models and technology commercially, please contact the University of Missouri Technology Transfer Office (techadvancement@missouri.edu) for licensing inquiries.
+
+The Prot2Token repository and the pre-trained models are provided ONLY for research purposes and are not intended for
+commercial use.
+If you are interested in using these models and technology commercially, please contact the University of Missouri
+Technology Transfer Office (techadvancement@missouri.edu) for licensing inquiries.
 
 # Usage
+
 To use Prot2Token, you can either install the package directly for quick prediction usage or set up the full repository
 for development.
 
 # Package
+
 ## Installation
 
 To install the package, you can run the following command:
@@ -68,7 +82,23 @@ To install the package, you can run the following command:
 pip install prot2token
 ```
 
+## List of Available Tasks
+
+The Prot2Token package currently supports the following tasks:
+
+| Task Name                   | Description                                                         | Type of Task               |
+|-----------------------------|---------------------------------------------------------------------|----------------------------|
+| fluorescence                | Predicts the fluorescence of a protein sequence.                    | Regression                 |
+| stability                   | Predicts the stability of a protein sequence.                       | Regression                 |
+| deeploc_localization        | Predicts the subcellular localization of a protein sequence.        | Multi-label classification |
+| kinase_group_classification | Classifies the kinase group of a protein sequence.                  | Multi-label classification |
+| kinase_phosphorylation_site | Predicts phosphorylation sites given substrate and kinase sequences.| Other (PTM prediction) |
+
+[//]: # (| melting_temperature         | Predicts the melting temperature of a protein sequence.             |)
+[//]: # (| mutation stability          | Predicts the stability of a protein sequence after mutation.        |)
+
 ## Prediction Tutorial
+
 To use the Prot2Token package for making predictions, follow the example code snippet below:
 
 ```python
@@ -76,30 +106,37 @@ from prot2token.models import prepare_models
 
 net = prepare_models(name='fluorescence', device='cuda', compile_model=True)
 
-samples = ["MVLSEGEWQLVLHVWAKVEADVAGHGQDILIRLFKSHPETLEKFDRVKHLKTEAEMKASEDLKKAGVTVLTALGAILKKKGHHEAELKPLAQSHATKHKIPIKYLEFISEAIIHVLHSRHPGNFGADAQGAMNKALELFRKDIAAKYKELGYQG"]
+samples = [
+    "MVLSEGEWQLVLHVWAKVEADVAGHGQDILIRLFKSHPETLEKFDRVKHLKTEAEMKASEDLKKAGVTVLTALGAILKKKGHHEAELKPLAQSHATKHKIPIKYLEFISEAIIHVLHSRHPGNFGADAQGAMNKALELFRKDIAAKYKELGYQG"]
 
 results = net.run(samples, merging_character='')
 print(results)
 
 ```
+
 for kinase phosphorylation site prediction task you need to have both substrate and kinase sequences as input:
 
 ```python
 from prot2token.models import prepare_models
+
 net = prepare_models(name='kinase_phosphorylation_site', device='cuda', compile_model=True)
 
-samples = [("MEVRPKESWNHADFVHCEDTESVPGKPSVNADEEVGGPQICRVCGDKATGYHFNVMTCEGCKGFFRRAMKRNARLRCPFRKGACEITRKTRRQCQACRLRKCLESGMKKEMIMSDEAVEERRALIKRKKSERTGTQPLGVQGLTEEQRMMIRELMDAQMKTFDTTFSHFKNFRLPGVLSSGCELPESLQAPSREEAAKWSQVRKDLCSLKVSLQLRGEDGSVWNYKPPADSGGKEIFSLLPHMADMSTYMFKGIISFAKVISYFRDLPIEDQISLLKGAAFELCQLRFNTVFNAETGTWECGRLSYCLEDTAGGFQQLLLEPMLKFHYMLKKLQLHEEEYVLMQAISLFSPDRPGVLQHRVVDQLQEQFAITLKSYIECNRPQPAHRFLFLKIMAMLTELRSINAQHTQRLLRIQDIHPFATPLMQELFGITGS",
-                'MENFQKVEKIGEGTYGVVYKARNKLTGEVVALKKIRLDTETEGVPSTAIREISLLKELNHPNIVKLLDVIHTENKLYLVFEFLHQDLKKFMDASALTGIPLPLIKSYLFQLLQGLAFCHSHRVLHRDLKPQNLLINTEGAIKLADFGLARAFGVPVRTYTHEVVTLWYRAPEILLGCKYYSTAVDIWSLGCIFAEMHLVGTQHHARCCGEHRRNGRQSLCPLCSYLEVAASQGWGMTAVSTPYPVTRRALFPGDSEIDQLFRIFRTLGTPDEVVWPGVTSMPDYKPSFPKWARQDFSKVVPPLDEDGRSLLSQMLHYDPNKRISAKAALAHPFFQDVTKPVPHLRL')]
+samples = [
+    ("MEVRPKESWNHADFVHCEDTESVPGKPSVNADEEVGGPQICRVCGDKATGYHFNVMTCEGCKGFFRRAMKRNARLRCPFRKGACEITRKTRRQCQACRLRKCLESGMKKEMIMSDEAVEERRALIKRKKSERTGTQPLGVQGLTEEQRMMIRELMDAQMKTFDTTFSHFKNFRLPGVLSSGCELPESLQAPSREEAAKWSQVRKDLCSLKVSLQLRGEDGSVWNYKPPADSGGKEIFSLLPHMADMSTYMFKGIISFAKVISYFRDLPIEDQISLLKGAAFELCQLRFNTVFNAETGTWECGRLSYCLEDTAGGFQQLLLEPMLKFHYMLKKLQLHEEEYVLMQAISLFSPDRPGVLQHRVVDQLQEQFAITLKSYIECNRPQPAHRFLFLKIMAMLTELRSINAQHTQRLLRIQDIHPFATPLMQELFGITGS",
+     'MENFQKVEKIGEGTYGVVYKARNKLTGEVVALKKIRLDTETEGVPSTAIREISLLKELNHPNIVKLLDVIHTENKLYLVFEFLHQDLKKFMDASALTGIPLPLIKSYLFQLLQGLAFCHSHRVLHRDLKPQNLLINTEGAIKLADFGLARAFGVPVRTYTHEVVTLWYRAPEILLGCKYYSTAVDIWSLGCIFAEMHLVGTQHHARCCGEHRRNGRQSLCPLCSYLEVAASQGWGMTAVSTPYPVTRRALFPGDSEIDQLFRIFRTLGTPDEVVWPGVTSMPDYKPSFPKWARQDFSKVVPPLDEDGRSLLSQMLHYDPNKRISAKAALAHPFFQDVTKPVPHLRL')]
 
 results = net.run(samples, merging_character=',')
 
 ```
+
 You can also get back the model confidence for metrics calculation. You need to set the `return_confidence` parameter:
+
 ```python
 results = net.run(samples, merging_character=',', return_confidence=True)
 ```
 
 # Development
+
 ## Installation
 
 Clone the repository and navigate into the directory:
@@ -200,18 +237,6 @@ accelerate launch inference.py --config_path configs/<inferenece_config_name>
 After running the inference code, you can find the results in the `inference_results.csv` file in `result_path`
 directory that you have set in the `inference_config.yaml` file.
 
-## Pretrained Models
-
-In the following table, you can find the pre-trained models that we have used in the paper. You can download them from
-the following links:
-
-| Model Name | Task                 | Auxiliary Tasks |Download Link                                                                                                                                            |
-|------------|----------------------|-----------------|----------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Prot2Token | Fluorescence         | PLA             |[Download](https://mailmissouri-my.sharepoint.com/:f:/r/personal/mpngf_umsystem_edu/Documents/Github/Prot2Token/pre-trained_models?csf=1&web=1&e=32q99b) |
-| Prot2Token | Stability            | -               |[Download](https://mailmissouri-my.sharepoint.com/:f:/r/personal/mpngf_umsystem_edu/Documents/Github/Prot2Token/pre-trained_models?csf=1&web=1&e=32q99b) |
-| Prot2Token | Deeploc Localization | -               |[Download](https://mailmissouri-my.sharepoint.com/:f:/r/personal/mpngf_umsystem_edu/Documents/Github/Prot2Token/pre-trained_models?csf=1&web=1&e=32q99b) |
-
-We will add more pre-trained models in the future.
 
 ## Important Considerations
 
@@ -281,5 +306,13 @@ If you use this code or the pretrained models, please cite the following paper:
     pages={2025--03},
     year={2025},
     publisher={Cold Spring Harbor Laboratory}
+}
+
+@article{pourmirzaei2025prot2token,
+    author = {Pourmirzaei, Mahdi and Esmaili, Farzaneh and Alqarghuli, Salhuldin and Pourmirzaei, Mohammadreza and Han, Ye and Chen, Kai and Rezaei, Mohsen and Wang, Duolin and Xu, Dong},
+    title = {Prot2Token: A Unified Framework for Protein Modeling via Next-Token Prediction},
+    journal = {arXiv preprint arXiv:2505.20589},
+    year = {2025},
+    url = {https://arxiv.org/abs/2505.20589}
 }
 ```
