@@ -59,15 +59,15 @@ def prepare_config_and_checkpoint(name):
     elif name == 'kinase_phosphorylation_site':
         checkpoint_path = hf_hub_download(
             repo_id="Mahdip72/prot2token",
-            filename="kinase_phosphorylation_site/2025-01-21__22-15-51/checkpoints/best_valid_kinase_phosphorylation_site_f1.pth"
+            filename="kinase_phosphorylation_site/2025-04-27__06-44-44/checkpoints/best_valid_kinase_phosphorylation_site_f1.pth"
         )
         decoder_tokenizer_path = hf_hub_download(
             repo_id="Mahdip72/prot2token",
-            filename="kinase_phosphorylation_site/2025-01-21__22-15-51/decoder_tokenizer.yaml"
+            filename="kinase_phosphorylation_site/2025-04-27__06-44-44/decoder_tokenizer.yaml"
         )
         config_file_path = hf_hub_download(
             repo_id="Mahdip72/prot2token",
-            filename="kinase_phosphorylation_site/2025-01-21__22-15-51/config.yaml"
+            filename="kinase_phosphorylation_site/2025-04-27__06-44-44/config.yaml"
         )
 
     else:

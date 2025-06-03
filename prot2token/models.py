@@ -493,7 +493,7 @@ class EncoderDecoder(nn.Module):
     def preprocessing(sequence, task_name, prompt):
         if len(sequence) == 2 and task_name == '<task_kinase_phosphorylation_site>':
             # find the indices of all S, T and Y amino acids in the first sequence
-            prompt = [str(i + 1) for i, aa in enumerate(sequence[0]) if aa in ['S', 'T', 'Y']]
+            prompt = [str(i + 1) for i, aa in enumerate(sequence[0]) if aa in ['S', 'T']]
             prompt += ['<sep>']
         return sequence, prompt
 
