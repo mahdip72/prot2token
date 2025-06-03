@@ -58,7 +58,7 @@ biological discovery and the development of novel therapeutics. </p>
 - [x] Continue training of a pre-trained model on new tasks with new vocab sizes
 - [ ] Add melting temperature prediction task to the package
 - [ ] Add mutation stability prediction task to the package
-- [ ] Updated version of substrate-kinase phosphorylation site prediction model
+- [x] Updated version of substrate-kinase phosphorylation site prediction model
 
 # license
 
