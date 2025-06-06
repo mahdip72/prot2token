@@ -90,11 +90,12 @@ The Prot2Token package currently supports the following tasks:
 |-----------------------------|---------------------------------------------------------------------|----------------------------|
 | fluorescence                | Predicts the fluorescence of a protein sequence.                    | Regression                 |
 | stability                   | Predicts the stability of a protein sequence.                       | Regression                 |
-| deeploc_localization        | Predicts the subcellular localization of a protein sequence.        | Multi-label classification |
-| kinase_group_classification | Classifies the kinase group of a protein sequence.                  | Multi-label classification |
-| kinase_phosphorylation_site | Predicts phosphorylation sites given substrate and kinase sequences.| Other (PTM prediction) |
-| melting_temperature         | Predicts the melting temperature of a protein sequence.             | Regression                 |
-[//]: # (| mutation stability          | Predicts the stability of a protein sequence after mutation.        |)
+| deeploc localization        | Predicts the subcellular localization of a protein sequence.        | Multi-label classification |
+| kinase group classification | Classifies the kinase group of a protein sequence.                  | Multi-label classification |
+| kinase phosphorylation site | Predicts phosphorylation sites given substrate and kinase sequences.| Other (PTM prediction) |
+| melting temperature         | Predicts the melting temperature of a protein sequence.             | Regression                 |
+
+[//]: # ([//]: &#40;| mutation stability          | Predicts the stability of a protein sequence after mutation.        |&#41;)
 
 ## Prediction Tutorial
 
