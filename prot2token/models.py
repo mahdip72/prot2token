@@ -609,6 +609,13 @@ class EncoderDecoder(nn.Module):
             # pick preds after the <sep> token
             preds = preds[preds.index('<sep>') + 1:]
             preds = [pred for pred in preds if pred in prompt]
+        elif self.task_token == "<task_protein_melting_temperature>":
+            # Convert the predicted tokens to the melting temperature value
+            preds = self.denormalize_labels(
+                float("".join(preds)),
+                original_min=2.0, original_max=106.0, new_min=0.0001, new_max=0.9999
+            )
+            preds = list(str(preds))
 
         preds = merging_character.join(preds)
         return preds, confidence
@@ -645,7 +652,7 @@ def prepare_models(name, device, compile_model=False):
 
     Args:
         name: The name of the prot2token task. It can be one of these: ['stability', 'fluorescence', 'kinase_group',
-        'kinase_interaction', 'kinase_phosphorylation_site'].
+        'kinase_interaction', 'kinase_phosphorylation_site', 'protein_melting_temperature'].
         device: The device to use for prediction.
         compile_model: Whether to compile the model or not.
 
@@ -657,7 +664,8 @@ def prepare_models(name, device, compile_model=False):
                        'fluorescence': '<task_fluorescence>',
                        'kinase_group': '<task_kinase_group>',
                        'kinase_interaction': '<task_kinase_interaction>',
-                       'kinase_phosphorylation_site': '<task_kinase_phosphorylation_site>'}
+                       'kinase_phosphorylation_site': '<task_kinase_phosphorylation_site>',
+                       'protein_melting_temperature': '<task_protein_melting_temperature>',}
 
     # Show error if the task name is not valid
     if name not in task_token_dict:

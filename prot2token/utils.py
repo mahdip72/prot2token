@@ -69,7 +69,19 @@ def prepare_config_and_checkpoint(name):
             repo_id="Mahdip72/prot2token",
             filename="kinase_phosphorylation_site/2025-04-27__06-44-44/config.yaml"
         )
-
+    elif name == 'protein_melting_temperature':
+        checkpoint_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="protein_melting_temperature/2025-06-05__00-04-55/checkpoints/best_valid_protein_melting_temperature_rmse.pth"
+        )
+        decoder_tokenizer_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="protein_melting_temperature/2025-06-05__00-04-55/decoder_tokenizer.yaml"
+        )
+        config_file_path = hf_hub_download(
+            repo_id="Mahdip72/prot2token",
+            filename="protein_melting_temperature/2025-06-05__00-04-55/config.yaml"
+        )
     else:
         raise ValueError(f"Model with name '{name}' is not supported.")
 

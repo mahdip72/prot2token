@@ -56,7 +56,7 @@ biological discovery and the development of novel therapeutics. </p>
 - [x] Add the pre-trained models to use them for prediction
 - [x] Add datasets
 - [x] Continue training of a pre-trained model on new tasks with new vocab sizes
-- [ ] Add melting temperature prediction task to the package
+- [x] Add melting temperature prediction task to the package
 - [ ] Add mutation stability prediction task to the package
 - [x] Updated version of substrate-kinase phosphorylation site prediction model
 
@@ -93,8 +93,7 @@ The Prot2Token package currently supports the following tasks:
 | deeploc_localization        | Predicts the subcellular localization of a protein sequence.        | Multi-label classification |
 | kinase_group_classification | Classifies the kinase group of a protein sequence.                  | Multi-label classification |
 | kinase_phosphorylation_site | Predicts phosphorylation sites given substrate and kinase sequences.| Other (PTM prediction) |
-
-[//]: # (| melting_temperature         | Predicts the melting temperature of a protein sequence.             |)
+| melting_temperature         | Predicts the melting temperature of a protein sequence.             | Regression                 |
 [//]: # (| mutation stability          | Predicts the stability of a protein sequence after mutation.        |)
 
 ## Prediction Tutorial
